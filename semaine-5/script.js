@@ -6,28 +6,52 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressBar = document.querySelector('.progress-bar-fill');
     const percentageText = document.querySelector('.progress-percentage');
 
-    if (progressBar && percentageText) {
-        const targetWidthStr = progressBar.getAttribute('data-width');
+    let counterInterval = null;
+
+    function updateProgress() {
+        if (!progressBar || !percentageText) return;
+
+        const targetWidthStr = progressBar.getAttribute('data-width') || "0%";
         const targetNumber = parseInt(targetWidthStr);
 
-        setTimeout(() => {
-            progressBar.style.width = targetWidthStr;
-        }, 300);
+        const currentText = percentageText.textContent.replace('%', '');
+        let startNumber = parseInt(currentText) || 0;
 
-        let currentNumber = 0;
+        progressBar.style.width = targetWidthStr;
+
+        if (counterInterval) clearInterval(counterInterval);
+
         const duration = 1500;
         const intervalTime = 20;
-        const step = (targetNumber / duration) * intervalTime;
+        const totalSteps = duration / intervalTime;
+        const stepValue = (targetNumber - startNumber) / totalSteps;
+        
+        let currentStep = 0;
 
-        const counter = setInterval(() => {
-            currentNumber += step;
-            
-            if (currentNumber >= targetNumber) {
-                currentNumber = targetNumber;
-                clearInterval(counter);
+        counterInterval = setInterval(() => {
+            currentStep++;
+            let newNumber = startNumber + (stepValue * currentStep);
+
+            if ((stepValue > 0 && newNumber >= targetNumber) || (stepValue < 0 && newNumber <= targetNumber)) {
+                newNumber = targetNumber;
+                clearInterval(counterInterval);
             }
-            
-            percentageText.textContent = Math.round(currentNumber) + '%';
+
+            percentageText.textContent = Math.round(newNumber) + '%';
         }, intervalTime);
+    }
+
+    setTimeout(updateProgress, 300);
+
+    if (progressBar) {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'data-width') {
+                    updateProgress();
+                }
+            });
+        });
+
+        observer.observe(progressBar, { attributes: true });
     }
 });

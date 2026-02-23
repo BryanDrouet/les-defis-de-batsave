@@ -48,7 +48,7 @@ function displayWeeks(filteredWeeks) {
 
         const iframe = document.createElement('iframe');
         const updateIframeSource = () => {
-            const fileName = currentView === 'defi' ? 'defi/defi.html' : 'index.html';
+            const fileName = currentView === 'defi' ? 'defi/index.html' : 'index.html';
             iframe.src = `${week.path}/${fileName}`;
         };
         updateIframeSource();
