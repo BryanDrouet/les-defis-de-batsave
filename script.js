@@ -3,7 +3,8 @@ const weeks = [
         name: "Semaine 5 - La lumière contre l'ombre", 
         path: "semaine-5", 
         weekNumber: 5, 
-        type: "jeu"
+        type: "jeu",
+        display: "presentation"
     },
 ];
 
@@ -15,6 +16,8 @@ const searchInput = document.getElementById('search');
 function displayWeeks(filteredWeeks) {
     summaryContainer.innerHTML = '';
     filteredWeeks.forEach(week => {
+        let currentView = week.display || 'presentation';
+
         const card = document.createElement('div');
         card.className = 'card';
         
@@ -38,7 +41,13 @@ function displayWeeks(filteredWeeks) {
         toggleContainer.appendChild(toggleIcon);
 
         const iframe = document.createElement('iframe');
-        iframe.src = `${week.path}/index.html`;
+        
+        const updateIframeSource = () => {
+            const fileName = currentView === 'defi' ? 'defi/defi.html' : 'index.html';
+            iframe.src = `${week.path}/${fileName}`;
+        };
+        
+        updateIframeSource();
 
         const storageKey = `preview-state-week-${week.weekNumber}`;
         let isExpanded = localStorage.getItem(storageKey) === 'true';
@@ -61,6 +70,42 @@ function displayWeeks(filteredWeeks) {
             updatePreviewDisplay();
         });
 
+        const switchBtn = document.createElement('div');
+        switchBtn.className = 'switch-view-btn';
+        
+        const switchIcon = document.createElement('i');
+        const switchText = document.createElement('span');
+        
+        const updateSwitchButton = () => {
+            if (currentView === 'presentation') {
+                switchIcon.setAttribute('data-lucide', 'gamepad-2');
+                switchText.textContent = 'Voir le défi';
+                switchBtn.classList.add('mode-defi');
+            } else {
+                switchIcon.setAttribute('data-lucide', 'file-text');
+                switchText.textContent = 'Voir la présentation';
+                switchBtn.classList.remove('mode-defi');
+            }
+            if (window.lucide) lucide.createIcons();
+        };
+
+        switchBtn.appendChild(switchIcon);
+        switchBtn.appendChild(switchText);
+        
+        switchBtn.addEventListener('click', () => {
+            currentView = currentView === 'presentation' ? 'defi' : 'presentation';
+            updateIframeSource();
+            updateSwitchButton();
+            
+            if (!isExpanded) {
+                isExpanded = true;
+                localStorage.setItem(storageKey, true);
+                updatePreviewDisplay();
+            }
+        });
+
+        updateSwitchButton();
+
         const linksContainer = document.createElement('div');
         linksContainer.className = 'card-links';
 
@@ -72,7 +117,7 @@ function displayWeeks(filteredWeeks) {
         const codeIcon = document.createElement('i');
         codeIcon.setAttribute('data-lucide', 'code');
         const codeText = document.createElement('span');
-        codeText.textContent = 'Voir le code source';
+        codeText.textContent = 'Code Source';
         
         codeLink.appendChild(codeIcon);
         codeLink.appendChild(codeText);
@@ -86,20 +131,20 @@ function displayWeeks(filteredWeeks) {
         const playText = document.createElement('span');
         
         let iconName = 'external-link';
-        let buttonText = 'Voir le rendu';
+        let buttonText = 'Lien direct';
 
         switch (week.type) {
             case 'jeu':
                 iconName = 'gamepad-2';
-                buttonText = 'Jouer au jeu';
+                buttonText = 'Lien Jeu';
                 break;
             case 'utilitaire':
                 iconName = 'wrench';
-                buttonText = 'Utiliser l\'outil';
+                buttonText = 'Lien Outil';
                 break;
             case 'site':
                 iconName = 'globe';
-                buttonText = 'Visiter le site';
+                buttonText = 'Lien Site';
                 break;
         }
 
@@ -115,6 +160,7 @@ function displayWeeks(filteredWeeks) {
         card.appendChild(titleContainer);
         card.appendChild(toggleContainer);
         card.appendChild(iframe);
+        card.appendChild(switchBtn);
         card.appendChild(linksContainer);
         summaryContainer.appendChild(card);
     });

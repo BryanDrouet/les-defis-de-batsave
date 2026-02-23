@@ -50,11 +50,11 @@ header nav a:hover {
 }
 
 header nav a.active {
-    color: #ff5858 !important;
+    color: #ff7676 !important;
 }
 
 header nav a.active:hover {
-    color: #ff0000 !important;
+    color: #dd0000 !important;
 }
 
 .search-bar {
@@ -247,9 +247,8 @@ iframe {
     border-top: none;
 }
 
-/* Effets au survol */
 .card-links .card-btn:hover {
-    background-color: #555;
+    background-color: #272727;
     color: white;
 }
 
@@ -263,6 +262,37 @@ iframe {
     border-bottom: none;
 }
 
+.switch-view-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    padding: 0.75rem;
+    background-color: #f8f9fa;
+    color: #333;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid #ddd;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    user-select: none;
+}
+
+.switch-view-btn svg {
+    width: 16px;
+    height: 16px;
+    color: #666;
+    transition: color 0.2s ease;
+}
+
+.switch-view-btn:hover {
+    background-color: #e9ecef;
+}
+
+.switch-view-btn.mode-defi svg {
+    color: #b30000;
+}
+
 @media (max-width: 650px) {
     .card {
         width: 75%;
@@ -270,5 +300,23 @@ iframe {
 
     .search-bar {
         max-width: 90%;
+    }
+
+    .card-links {
+        flex-direction: column;
+    }
+
+    .card-links .card-btn:first-child {
+        border-radius: 0;
+        border: 1px solid #ddd;
+    }
+
+    .card-links .card-btn.play-btn {
+        border-radius: 0 0 8px 8px;
+        border: 1px solid #ddd;
+    }
+
+    .preview-toggle.collapsed {
+        border: 1px solid #ddd;
     }
 }
