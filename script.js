@@ -16,7 +16,9 @@ const searchInput = document.getElementById('search');
 function displayWeeks(filteredWeeks) {
     summaryContainer.innerHTML = '';
     filteredWeeks.forEach(week => {
-        let currentView = week.display || 'presentation';
+        const viewModeKey = `view-mode-week-${week.weekNumber}`;
+        
+        let currentView = localStorage.getItem(viewModeKey) || week.display || 'presentation';
 
         const card = document.createElement('div');
         card.className = 'card';
@@ -56,25 +58,28 @@ function displayWeeks(filteredWeeks) {
         const switchBtn = document.createElement('div');
         switchBtn.className = 'switch-view-btn';
         
-        const switchIcon = document.createElement('i');
-        const switchText = document.createElement('span');
-        
         const updateSwitchButton = () => {
+            switchBtn.innerHTML = ''; 
+
+            const newIcon = document.createElement('i');
+            const newText = document.createElement('span');
+
             if (currentView === 'presentation') {
-                switchIcon.setAttribute('data-lucide', 'gamepad-2');
-                switchText.textContent = 'Voir le défi';
+                newIcon.setAttribute('data-lucide', 'gamepad-2');
+                newText.textContent = 'Voir le défi';
                 switchBtn.classList.add('mode-defi');
             } else {
-                switchIcon.setAttribute('data-lucide', 'file-text');
-                switchText.textContent = 'Voir la présentation';
+                newIcon.setAttribute('data-lucide', 'book-open'); // Icône documentation
+                newText.textContent = 'Voir la présentation';
                 switchBtn.classList.remove('mode-defi');
             }
+
+            switchBtn.appendChild(newIcon);
+            switchBtn.appendChild(newText);
+
             if (window.lucide) lucide.createIcons();
         };
 
-        switchBtn.appendChild(switchIcon);
-        switchBtn.appendChild(switchText);
-        
         previewContent.appendChild(iframe);
         previewContent.appendChild(switchBtn);
         previewWrapper.appendChild(previewContent);
@@ -102,6 +107,7 @@ function displayWeeks(filteredWeeks) {
 
         switchBtn.addEventListener('click', () => {
             currentView = currentView === 'presentation' ? 'defi' : 'presentation';
+            localStorage.setItem(viewModeKey, currentView);
             updateIframeSource();
             updateSwitchButton();
         });
@@ -138,15 +144,15 @@ function displayWeeks(filteredWeeks) {
         switch (week.type) {
             case 'jeu':
                 iconName = 'gamepad-2';
-                buttonText = 'Lien Jeu';
+                buttonText = 'Ouvrir le Jeu';
                 break;
             case 'utilitaire':
                 iconName = 'wrench';
-                buttonText = 'Lien Outil';
+                buttonText = "Ouvrir l'Outil";
                 break;
             case 'site':
                 iconName = 'globe';
-                buttonText = 'Lien Site';
+                buttonText = "Ouvrir le Site";
                 break;
         }
 
