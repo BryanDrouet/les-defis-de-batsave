@@ -26,7 +26,7 @@ function displayWeeks(filteredWeeks) {
         const titleContainer = document.createElement('div');
         const title = document.createElement('a');
         title.textContent = week.name;
-        title.href = `${week.path}/index.html`;
+        title.href = `${week.path}/`;
         title.target = '_blank';
         titleContainer.appendChild(title);
 
@@ -50,7 +50,7 @@ function displayWeeks(filteredWeeks) {
 
         const iframe = document.createElement('iframe');
         const updateIframeSource = () => {
-            const fileName = currentView === 'defi' ? 'defi/index.html' : 'index.html';
+            const fileName = currentView === 'defi' ? 'defi/' : '';
             iframe.src = `${week.path}/${fileName}`;
         };
         updateIframeSource();
@@ -131,7 +131,7 @@ function displayWeeks(filteredWeeks) {
         codeLink.appendChild(codeText);
 
         const playLink = document.createElement('a');
-        playLink.href = `${week.path}/defi/index.html`;
+        playLink.href = `${week.path}/defi/`;
         playLink.className = 'card-btn play-btn';
         playLink.target = '_blank';
         
