@@ -1,5 +1,10 @@
 const weeks = [
-    { name: "Semaine 5 - La lumière contre l'ombre", path: "Semaine 5 - La lumière contre l'ombre", weekNumber: 5, codeSource : "Semaine%205%20-%20La%20lumi%C3%A8re%20contre%20l'ombre" },
+    { 
+        name: "Semaine 5 - La lumière contre l'ombre", 
+        weekNumber: 5, 
+        codeSource: "Semaine%205%20-%20La%20lumi%C3%A8re%20contre%20l'ombre",
+        type: "jeu"
+    },
 ];
 
 weeks.sort((a, b) => a.weekNumber - b.weekNumber);
@@ -16,7 +21,7 @@ function displayWeeks(filteredWeeks) {
         const titleContainer = document.createElement('div');
         const title = document.createElement('a');
         title.textContent = week.name;
-        title.href = `${week.path}/index.html`; 
+        title.href = `https://bryandrouet.github.io/les-defis-de-batsave/${encodeURIComponent(week.name)}/`; 
         titleContainer.appendChild(title);
 
         const toggleContainer = document.createElement('div');
@@ -32,7 +37,7 @@ function displayWeeks(filteredWeeks) {
         toggleContainer.appendChild(toggleIcon);
 
         const iframe = document.createElement('iframe');
-        iframe.src = `${week.path}/index.html`;
+        iframe.src = `${week.name}/index.html`;
 
         const storageKey = `preview-state-week-${week.weekNumber}`;
         let isExpanded = localStorage.getItem(storageKey) === 'true';
@@ -66,20 +71,39 @@ function displayWeeks(filteredWeeks) {
         const codeIcon = document.createElement('i');
         codeIcon.setAttribute('data-lucide', 'code');
         const codeText = document.createElement('span');
-        codeText.textContent = 'Code Source';
+        codeText.textContent = 'Voir le code source';
         
         codeLink.appendChild(codeIcon);
         codeLink.appendChild(codeText);
 
         const playLink = document.createElement('a');
-        playLink.href = `${week.path}/index.html`;
+        playLink.href = `https://bryandrouet.github.io/les-defis-de-batsave/${encodeURIComponent(week.name)}/`;
         playLink.className = 'card-btn play-btn';
         playLink.target = '_blank';
         
         const playIcon = document.createElement('i');
-        playIcon.setAttribute('data-lucide', 'gamepad-2');
         const playText = document.createElement('span');
-        playText.textContent = 'Voir le rendu';
+        
+        let iconName = 'external-link';
+        let buttonText = 'Voir le rendu'
+
+        switch (week.type) {
+            case 'jeu':
+                iconName = 'gamepad-2';
+                buttonText = 'Jouer au jeu';
+                break;
+            case 'utilitaire':
+                iconName = 'wrench';
+                buttonText = 'Utiliser l\'outil';
+                break;
+            case 'site':
+                iconName = 'globe';
+                buttonText = 'Visiter le site';
+                break;
+        }
+
+        playIcon.setAttribute('data-lucide', iconName);
+        playText.textContent = buttonText;
         
         playLink.appendChild(playIcon);
         playLink.appendChild(playText);
