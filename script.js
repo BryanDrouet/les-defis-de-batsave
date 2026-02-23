@@ -1,9 +1,8 @@
 const weeks = [
     { 
-        name: "Semaine 5 - La lumière contre l'ombre",
-        path: "semaine-5",
-        weekNumber: 5,
-        codeSource: "Semaine%205%20-%20La%20lumi%C3%A8re%20contre%20l'ombre",
+        name: "Semaine 5 - La lumière contre l'ombre", 
+        path: "semaine-5", 
+        weekNumber: 5, 
         type: "jeu"
     },
 ];
@@ -22,7 +21,7 @@ function displayWeeks(filteredWeeks) {
         const titleContainer = document.createElement('div');
         const title = document.createElement('a');
         title.textContent = week.name;
-        title.href = `https://defis-batsave.bryan.ovh/${week.path}/`; 
+        title.href = `https://defis-batsave.bryan.ovh/${encodeURIComponent(week.path)}/`; 
         titleContainer.appendChild(title);
 
         const toggleContainer = document.createElement('div');
@@ -65,7 +64,7 @@ function displayWeeks(filteredWeeks) {
         linksContainer.className = 'card-links';
 
         const codeLink = document.createElement('a');
-        codeLink.href = `https://github.com/BryanDrouet/les-defis-de-batsave/tree/main/${week.codeSource}`;
+        codeLink.href = `https://github.com/BryanDrouet/les-defis-de-batsave/tree/main/${encodeURIComponent(week.path)}`;
         codeLink.className = 'card-btn';
         codeLink.target = '_blank';
         
@@ -78,7 +77,7 @@ function displayWeeks(filteredWeeks) {
         codeLink.appendChild(codeText);
 
         const playLink = document.createElement('a');
-        playLink.href = `https://defis-batsave.bryan.ovh/${week.path}/`;
+        playLink.href = `https://defis-batsave.bryan.ovh/${encodeURIComponent(week.path)}/`;
         playLink.className = 'card-btn play-btn';
         playLink.target = '_blank';
         
