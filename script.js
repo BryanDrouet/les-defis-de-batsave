@@ -131,7 +131,7 @@ function displayWeeks(filteredWeeks) {
         codeLink.appendChild(codeText);
 
         const playLink = document.createElement('a');
-        playLink.href = `${week.path}/index.html`;
+        playLink.href = `${week.path}/defi/index.html`;
         playLink.className = 'card-btn play-btn';
         playLink.target = '_blank';
         
