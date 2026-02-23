@@ -2,7 +2,7 @@
 Retrouvez ici tous mes défis réalisés dans [le Discord de Batsave.](https://discord.gg/V7YFA4cv9x)
 
 ## Au sommaire :
-- Semaine 5 | La lumière contre l’ombre
+- Semaine 5 - La lumière contre l’ombre
 
 
 
