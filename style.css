@@ -38,7 +38,16 @@ body {
     background-color: #f9f9f9;
 }
 
-body, .card a, a:not(header nav a):not(.card a) {
+main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    align-items: center;
+}
+
+body, .card a, a:not(header nav a):not(.card a), .search-bar {
     margin: 0;
 }
 
@@ -58,12 +67,12 @@ header nav {
     align-items: center;
     max-width: 1200px;
     margin: 0 auto;
+    gap: 1rem;
 }
 
 header nav a {
     color: white;
     text-decoration: none;
-    margin: 0 1rem;
     font-weight: bold;
     transition: color 0.3s ease-in-out;
 }
@@ -81,7 +90,6 @@ header nav a.active:hover {
 }
 
 .search-bar {
-    margin: 2rem auto;
     max-width: 600px;
     display: flex;
     justify-content: center;
@@ -139,7 +147,6 @@ header nav a.active:hover {
     flex-wrap: wrap;
     gap: 1rem;
     justify-content: center;
-    margin-top: 1rem;
 }
 
 .card {
@@ -352,7 +359,7 @@ iframe {
 
 @media (max-width: 650px) {
     .card {
-        width: 75%;
+        width: 100%;
     }
 
     .search-bar {
@@ -366,6 +373,7 @@ iframe {
     .card-links .card-btn:first-child {
         border-radius: 0;
         border: 1px solid #ddd;
+        border-bottom: 0;
     }
 
     .card-links .card-btn.play-btn {

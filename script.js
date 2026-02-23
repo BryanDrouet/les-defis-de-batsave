@@ -5,7 +5,7 @@ const weeks = [
         weekNumber: 5, 
         type: "jeu",
         display: "presentation"
-    },
+    }
 ];
 
 weeks.sort((a, b) => a.weekNumber - b.weekNumber);
