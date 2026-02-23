@@ -34,9 +34,12 @@ body {
     font-optical-sizing: auto;
     font-weight: 400;
     font-style: normal;
-    margin: 0;
     padding: 0;
     background-color: #f9f9f9;
+}
+
+body, .card a, a:not(header nav a):not(.card a) {
+    margin: 0;
 }
 
 header {
@@ -94,6 +97,8 @@ header nav a.active:hover {
     color: #666;
     width: 20px;
     height: 20px;
+    pointer-events: none;
+    transition: color 0.3s ease;
 }
 
 .search-bar input {
@@ -107,6 +112,15 @@ header nav a.active:hover {
     background-color: white;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.search-bar:hover input {
+    border-color: #999;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.search-bar:hover .search-icon {
+    color: #333;
 }
 
 .search-bar input:focus {
@@ -152,7 +166,6 @@ header nav a.active:hover {
 .card a {
     text-decoration: none;
     font-size: 1.2rem;
-    margin: 0;
     color: #b30000;
     font-weight: bold;
     background-image: linear-gradient(#960000, #960000);
@@ -168,7 +181,6 @@ header nav a.active:hover {
 }
 
 a:not(header nav a):not(.card a) {
-    margin: 0;
     color: #b30000;
     font-weight: bold;
     text-decoration: none;
