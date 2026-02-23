@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Règles du jeu</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        h2:first-child {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="index.html">Sommaire</a>
+            <a class="active" href="rules.html">Règles</a>
+        </nav>
+    </header>
+    <main>
+        <section id="rules" style="padding: 1rem;">
+            <div id="readme">
+                <!-- Contenu du README chargé dynamiquement -->
+            </div>
+        </section>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/showdown/dist/showdown.min.js"></script>
+    <script>
+        fetch('README.md')
+            .then(response => response.text())
+            .then(text => {
+                const readmeContainer = document.getElementById('readme');
+                const converter = new showdown.Converter();
+                const html = converter.makeHtml(text);
+                readmeContainer.innerHTML = html;
+            })
+            .catch(error => console.error('Erreur lors du chargement du README:', error));
+    </script>
+</body>
+</html>

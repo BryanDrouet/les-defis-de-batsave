@@ -1,1 +1,27 @@
-
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sommaire des Défis</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/showdown/dist/showdown.min.js"></script>
+</head>
+<body>
+    <header>
+        <nav>
+            <a class="active" href="index.html">Sommaire</a>
+            <a href="rules.html">Règles</a>
+        </nav>
+    </header>
+    <main>
+        <div class="search-bar">
+            <input type="text" id="search" placeholder="Rechercher une semaine...">
+        </div>
+        <div class="summary" id="summary">
+            <!-- Les cartes des semaines seront insérées ici dynamiquement -->
+        </div>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
