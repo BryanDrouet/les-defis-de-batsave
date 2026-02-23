@@ -2,22 +2,44 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Semaine 5 - La lumière contre l'ombre | Les Défis de Batsave</title>
-
-    <link rel="icon" type="image/x-icon" href="assets/icon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Wanted - La lumière contre l'ombre</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/showdown/dist/showdown.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <header>
-        
-    </header>
 
-    <main>
-        
-    </main>
+    <div class="game-container">
+        <header class="ui-bar">
+            <div class="score-box">
+                <span>SCORE</span>
+                <span id="score">0</span>
+            </div>
+
+            <div class="wanted-frame">
+                <img src="assets/img/wantedEmpty.png" alt="Cadre" class="frame-bg">
+                <img id="target-img" src="" alt="Cible" class="target-face">
+            </div>
+
+            <div class="timer-box">
+                <span>TEMPS</span>
+                <span id="timer">10</span>
+            </div>
+        </header>
+
+        <main id="game-board" class="board">
+            </main>
+
+        <div id="shadow-overlay" class="hidden"></div>
+
+        <div id="overlay-screen" class="overlay">
+            <div class="message-box">
+                <h1 id="overlay-title">WANTED!</h1>
+                <p id="overlay-desc">Trouve le personnage affiché avant la fin du temps.</p>
+                <p class="warning">Attention : À partir du niveau 5, les ténèbres arrivent...</p>
+                <button id="start-btn">COMMENCER</button>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>

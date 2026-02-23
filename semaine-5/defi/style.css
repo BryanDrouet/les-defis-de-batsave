@@ -1,56 +1,234 @@
-@import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
+/* Import de la font fournie */
+@font-face {
+    font-family: 'Screenlogger';
+    src: url('assets/screenlogger-cool.ttf') format('truetype');
+}
 
 * {
     box-sizing: border-box;
-    word-break: break-word;
+    user-select: none;
+    -webkit-user-select: none; /* Safari mobile */
+    touch-action: none; /* Empêche le scroll sur mobile pour jouer tranquille */
 }
 
-html {
-    scroll-behavior: smooth;
-    scrollbar-width: thin;
-    scrollbar-color: #b30000 #333;
-}
-
-::-webkit-scrollbar {
-    width: 12px;
-}
-
-::-webkit-scrollbar-track {
-    background: #f9f9f9;
-}
-
-::-webkit-scrollbar-thumb {
-    background-color: #b30000;
-    border-radius: 6px;
-    border: 3px solid #f9f9f9;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background-color: #960000;
-}
-
-body {
-    font-family: "Rubik", sans-serif;
-    font-optical-sizing: auto;
-    font-weight: 400;
-    font-style: normal;
-    padding: 0;
-    background-color: #f9f9f9;
-}
-
-main {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    margin: 2rem auto;
-    padding: 0 1rem;
-    align-items: center;
+/* Force le pixel art */
+img, .game-container {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
 }
 
 body {
     margin: 0;
+    padding: 0;
+    background-color: #2c3e50;
+    font-family: 'Screenlogger', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
 }
 
-@media (max-width: 650px) {
+.game-container {
+    /* --- RESPONSIVITÉ --- */
+    /* On utilise vmin pour que ça s'adapte à la hauteur OU la largeur selon l'écran */
+    width: 95vmin; 
+    height: 95vmin;
+    
+    /* Si l'écran est très haut (mobile), on peut prendre plus de hauteur */
+    @media (orientation: portrait) {
+        height: 140vw; /* Ratio plus vertical */
+        max-height: 90vh;
+    }
 
+    background: url('assets/img/wantedEmpty.png');
+    background-size: cover;
+    background-position: center;
+    background-color: #eec39a;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* --- UI DU HAUT --- */
+.ui-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: rgba(0, 0, 0, 0.15);
+    flex-shrink: 0; 
+    height: 15%; 
+    min-height: 80px;
+    
+    /* 🟢 MODIFICATION : On met l'interface au-dessus de l'ombre */
+    position: relative;
+    z-index: 15; /* L'ombre est à 10, donc l'UI passe devant */
+}
+
+.score-box, .timer-box {
+    font-size: 1.2rem; /* Texte lisible mais pas géant */
+    color: #5a3825;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 80px;
+}
+
+#score, #timer {
+    font-size: 2rem;
+    font-weight: bold;
+    line-height: 1;
+}
+
+#timer {
+    color: #b30000;
+}
+
+/* Le cadre Wanted */
+.wanted-frame {
+    position: relative;
+    height: 100%;
+    aspect-ratio: 1/1; /* Carré parfait */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.frame-bg {
+    position: absolute;
+    height: 110%; /* Légèrement plus grand pour déborder */
+    width: auto;
+    z-index: 1;
+}
+
+.target-face {
+    height: 70%;
+    width: auto;
+    z-index: 2;
+    transform: rotate(-3deg);
+}
+
+/* --- PLATEAU DE JEU --- */
+.board {
+    flex: 1; /* Prend tout l'espace restant */
+    display: grid;
+    /* Grid gérée par JS */
+    padding: 10px;
+    gap: 5px;
+    position: relative;
+    align-content: center;
+    justify-content: center;
+    /* Pour éviter que les images soient coupées si trop nombreuses */
+    overflow: hidden; 
+}
+
+.character {
+    width: 100%;
+    height: 100%;
+    max-height: 100%; /* Important pour ne pas déborder */
+    object-fit: contain;
+    cursor: pointer;
+    /* Animation d'apparition */
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.character:active {
+    transform: scale(0.9);
+}
+
+@keyframes popIn {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* --- MÉCANIQUE LUMIÈRE CONTRE OMBRE --- */
+#shadow-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+    background: black;
+    
+    /* 🟢 MODIFICATION : On utilise une variable --radius pour la taille */
+    /* Valeur par défaut : 250px (Grand) */
+    --radius: 250px; 
+    
+    mask-image: radial-gradient(circle var(--radius) at var(--x, 50%) var(--y, 50%), transparent 0%, black 100%);
+    -webkit-mask-image: radial-gradient(circle var(--radius) at var(--x, 50%) var(--y, 50%), transparent 0%, black 100%);
+    
+    opacity: 0;
+    transition: opacity 1s ease, --radius 0.5s ease; /* Transition douce pour la taille aussi */
+}
+
+#shadow-overlay.active {
+    opacity: 0.98;
+}
+
+/* --- ÉCRANS (Start / Game Over) --- */
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+    text-align: center;
+    color: white;
+    padding: 20px;
+}
+
+.overlay.hidden {
+    display: none;
+}
+
+.message-box h1 {
+    font-size: 3.5rem;
+    color: #f1c40f;
+    margin: 0;
+    text-shadow: 4px 4px 0 #b30000;
+}
+
+.message-box p {
+    font-size: 1.1rem;
+    margin: 20px 0;
+    line-height: 1.4;
+}
+
+.message-box .warning {
+    color: #e74c3c;
+    font-size: 1rem;
+    font-style: italic;
+    margin-top: 10px;
+}
+
+button {
+    background: #f1c40f;
+    border: 4px solid #b30000;
+    color: #b30000;
+    font-family: 'Screenlogger', sans-serif;
+    font-size: 1.5rem;
+    padding: 10px 30px;
+    cursor: pointer;
+    border-radius: 10px;
+    margin-top: 20px;
+    transition: transform 0.1s;
+}
+
+button:hover {
+    transform: scale(1.05);
+    background: white;
 }
