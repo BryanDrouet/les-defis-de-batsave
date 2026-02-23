@@ -4,14 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Les Défis de Batsave - Les règles</title>
+    
+    <meta name="description" content="Consultez le fonctionnement, les principes et la philosophie des défis créatifs hebdomadaires de la communauté Batsave.">
+    <meta name="author" content="Bryan_Drouet">
+    <meta name="theme-color" content="#b30000">
+
+    <meta property="og:title" content="Les Défis de Batsave - Les règles">
+    <meta property="og:type" content="website">
+    <meta property="article:section" content="Game">
+    <meta property="og:url" content="https://defis-batsave.bryan.ovh/rules.html">
+    <meta property="og:description" content="Tout savoir sur les défis : le rythme hebdomadaire, la liberté de création et le fonctionnement du classement.">
+    <meta property="og:image" content="https://defis-batsave.bryan.ovh/icon.jpeg">
+    <meta property="og:site_name" content="Les Défis de Batsave">
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Les Défis de Batsave - Les règles">
+    <meta name="twitter:description" content="Découvrez comment participer aux défis créatifs : Créer régulièrement > créer parfaitement.">
+    <meta name="twitter:image" content="https://defis-batsave.bryan.ovh/icon.jpeg">
+
     <link rel="icon" type="image/x-icon" href="icon.ico">
     <link rel="stylesheet" href="style.css">
-    <style>
-        h2:first-child {
-            margin-top: 0;
-        }
-    </style>
-</head>
+    </head>
 <body>
     <header>
         <nav>
@@ -22,21 +35,27 @@
     <main>
         <section id="rules">
             <div id="readme">
-                <!-- Contenu du README chargé dynamiquement -->
+                Chargement des règles...
             </div>
         </section>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/showdown/dist/showdown.min.js"></script>
     <script>
         fetch('README.md')
-            .then(response => response.text())
+            .then(response => {
+                if (!response.ok) throw new Error("Fichier non trouvé");
+                return response.text();
+            })
             .then(text => {
                 const readmeContainer = document.getElementById('readme');
                 const converter = new showdown.Converter();
                 const html = converter.makeHtml(text);
                 readmeContainer.innerHTML = html;
             })
-            .catch(error => console.error('Erreur lors du chargement du README:', error));
+            .catch(error => {
+                console.error('Erreur:', error);
+                document.getElementById('readme').innerHTML = "<p>Impossible de charger les règles.</p>";
+            });
     </script>
 </body>
 </html>
