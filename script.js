@@ -21,7 +21,8 @@ function displayWeeks(filteredWeeks) {
         const titleContainer = document.createElement('div');
         const title = document.createElement('a');
         title.textContent = week.name;
-        title.href = `https://defis-batsave.bryan.ovh/${encodeURIComponent(week.path)}/`; 
+        title.href = `${week.path}/index.html`;
+        title.target = '_blank';
         titleContainer.appendChild(title);
 
         const toggleContainer = document.createElement('div');
@@ -77,7 +78,7 @@ function displayWeeks(filteredWeeks) {
         codeLink.appendChild(codeText);
 
         const playLink = document.createElement('a');
-        playLink.href = `https://defis-batsave.bryan.ovh/${encodeURIComponent(week.path)}/`;
+        playLink.href = `${week.path}/index.html`;
         playLink.className = 'card-btn play-btn';
         playLink.target = '_blank';
         
