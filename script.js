@@ -40,35 +40,18 @@ function displayWeeks(filteredWeeks) {
         toggleContainer.appendChild(toggleText);
         toggleContainer.appendChild(toggleIcon);
 
-        const iframe = document.createElement('iframe');
+        const previewWrapper = document.createElement('div');
+        previewWrapper.className = 'preview-wrapper';
         
+        const previewContent = document.createElement('div');
+        previewContent.className = 'preview-content';
+
+        const iframe = document.createElement('iframe');
         const updateIframeSource = () => {
             const fileName = currentView === 'defi' ? 'defi/defi.html' : 'index.html';
             iframe.src = `${week.path}/${fileName}`;
         };
-        
         updateIframeSource();
-
-        const storageKey = `preview-state-week-${week.weekNumber}`;
-        let isExpanded = localStorage.getItem(storageKey) === 'true';
-
-        const updatePreviewDisplay = () => {
-            if (isExpanded) {
-                iframe.style.display = 'block';
-                toggleContainer.classList.remove('collapsed');
-            } else {
-                iframe.style.display = 'none';
-                toggleContainer.classList.add('collapsed');
-            }
-        };
-
-        updatePreviewDisplay();
-
-        toggleContainer.addEventListener('click', () => {
-            isExpanded = !isExpanded;
-            localStorage.setItem(storageKey, isExpanded);
-            updatePreviewDisplay();
-        });
 
         const switchBtn = document.createElement('div');
         switchBtn.className = 'switch-view-btn';
@@ -92,16 +75,35 @@ function displayWeeks(filteredWeeks) {
         switchBtn.appendChild(switchIcon);
         switchBtn.appendChild(switchText);
         
+        previewContent.appendChild(iframe);
+        previewContent.appendChild(switchBtn);
+        previewWrapper.appendChild(previewContent);
+
+        const storageKey = `preview-state-week-${week.weekNumber}`;
+        let isExpanded = localStorage.getItem(storageKey) === 'true';
+
+        const updatePreviewDisplay = () => {
+            if (isExpanded) {
+                previewWrapper.classList.add('open');
+                toggleContainer.classList.remove('collapsed');
+            } else {
+                previewWrapper.classList.remove('open');
+                toggleContainer.classList.add('collapsed');
+            }
+        };
+
+        updatePreviewDisplay();
+
+        toggleContainer.addEventListener('click', () => {
+            isExpanded = !isExpanded;
+            localStorage.setItem(storageKey, isExpanded);
+            updatePreviewDisplay();
+        });
+
         switchBtn.addEventListener('click', () => {
             currentView = currentView === 'presentation' ? 'defi' : 'presentation';
             updateIframeSource();
             updateSwitchButton();
-            
-            if (!isExpanded) {
-                isExpanded = true;
-                localStorage.setItem(storageKey, true);
-                updatePreviewDisplay();
-            }
         });
 
         updateSwitchButton();
@@ -159,8 +161,7 @@ function displayWeeks(filteredWeeks) {
 
         card.appendChild(titleContainer);
         card.appendChild(toggleContainer);
-        card.appendChild(iframe);
-        card.appendChild(switchBtn);
+        card.appendChild(previewWrapper);
         card.appendChild(linksContainer);
         summaryContainer.appendChild(card);
     });

@@ -7,6 +7,26 @@
 
 html {
     scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: #b30000 #333;
+}
+
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f9f9f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #b30000;
+    border-radius: 6px;
+    border: 3px solid #f9f9f9;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #960000;
 }
 
 body {
@@ -165,14 +185,31 @@ a:not(header nav a):not(.card a):hover {
     background-size: 100% 2px; 
 }
 
+.preview-wrapper {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.4s ease-out;
+    background-color: white;
+}
+
+.preview-wrapper.open {
+    grid-template-rows: 1fr;
+}
+
+.preview-content {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
 iframe {
     width: 100%;
     aspect-ratio: 1/1;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     zoom: 70%;
-    border: 1px solid #ddd;
-    border-top: none; 
-    border-radius: 0;
+    border: none;
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    box-shadow: none;
 }
 
 .preview-toggle {
@@ -190,10 +227,17 @@ iframe {
     transition: background-color 0.2s ease, border-radius 0.2s ease;
     user-select: none;
     border: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
 }
 
 .preview-toggle.collapsed {
+    border-bottom: 1px solid #ddd;
     border-radius: 6px;
+    transition: border-radius 0.4s ease;
+}
+
+.preview-toggle:not(.collapsed) {
+    border-radius: 6px 6px 0 0;
 }
 
 .preview-toggle svg {
@@ -222,7 +266,6 @@ iframe {
     background-color: #333;
     color: white;
     font-size: 0.85rem;
-    font-weight: bold;
     text-decoration: none;
     transition: background-color 0.2s ease, transform 0.2s ease;
     background-image: none; 
@@ -274,6 +317,8 @@ iframe {
     font-size: 0.85rem;
     font-weight: 600;
     border: 1px solid #ddd;
+    border-top: 1px solid #ddd;
+    border-bottom: none;
     transition: background-color 0.2s ease, color 0.2s ease;
     user-select: none;
 }
