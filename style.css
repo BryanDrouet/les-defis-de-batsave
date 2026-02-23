@@ -5,6 +5,10 @@
     word-break: break-word;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     font-family: "Rubik", sans-serif;
     font-optical-sizing: auto;
@@ -54,18 +58,46 @@ header nav a.active:hover {
 }
 
 .search-bar {
-    margin: 1rem auto;
+    margin: 2rem auto;
     max-width: 600px;
     display: flex;
     justify-content: center;
+    position: relative;
+    width: 90%;
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+    width: 20px;
+    height: 20px;
 }
 
 .search-bar input {
     width: 100%;
-    padding: 0.5rem;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    padding: 0.8rem 1rem 0.8rem 2.5rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: #b30000;
+    box-shadow: 0 4px 10px rgba(179, 0, 0, 0.1);
+}
+
+.search-bar input::placeholder {
+    color: #999;
+    font-style: italic;
 }
 
 .summary {
@@ -83,10 +115,13 @@ header nav a.active:hover {
     border: 1px solid #ddd;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    width: 250px;
+    width: 400px;
     padding: 1rem;
     text-align: center;
-    gap: 1rem;
+}
+
+.card > div:first-child {
+    margin-bottom: 1rem; 
 }
 
 .card p {
@@ -133,13 +168,102 @@ a:not(header nav a):not(.card a):hover {
 iframe {
     width: 100%;
     aspect-ratio: 1/1;
-    border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     zoom: 70%;
     border: 1px solid #ddd;
+    border-top: none; 
+    border-radius: 0;
 }
 
-@media (max-width: 600px) {
+.preview-toggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    padding: 0.75rem;
+    background-color: #f1f1f1;
+    border-radius: 6px 6px 0 0; 
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #333;
+    transition: background-color 0.2s ease, border-radius 0.2s ease;
+    user-select: none;
+    border: 1px solid #ddd;
+}
+
+.preview-toggle.collapsed {
+    border-radius: 6px;
+}
+
+.preview-toggle svg {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease;
+}
+
+.preview-toggle.collapsed svg {
+    transform: rotate(-90deg);
+}
+
+.card-links {
+    display: flex;
+    justify-content: space-between;
+    gap: 0;
+}
+
+.card-links .card-btn {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background-color: #333;
+    color: white;
+    font-size: 0.85rem;
+    font-weight: bold;
+    text-decoration: none;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    background-image: none; 
+}
+
+.card-links .card-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.card-links .card-btn:first-child {
+    border-radius: 0 0 0 6px;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-right: none;
+}
+
+.card-links .card-btn.play-btn {
+    background-color: #b30000;
+    border-radius: 0 0 8px 0;
+    border: 1px solid #ddd;
+    border-top: none;
+}
+
+/* Effets au survol */
+.card-links .card-btn:hover {
+    background-color: #555;
+    color: white;
+}
+
+.card-links .card-btn.play-btn:hover {
+    background-color: #960000;
+    color: white;
+}
+
+.preview-toggle.collapsed {
+    border-radius: 6px 6px 0 0;
+    border-bottom: none;
+}
+
+@media (max-width: 650px) {
     .card {
         width: 75%;
     }
