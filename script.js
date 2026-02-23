@@ -1,5 +1,5 @@
 const weeks = [
-    { name: "Semaine 5 - La lumière contre l'ombre", path: "Semaine 5 - La lumière contre l'ombre", weekNumber: 5, codeSource : "https://github.com/BryanDrouet/les-defis-de-batsave/tree/main/Semaine%205%20-%20La%20lumi%C3%A8re%20contre%20l%E2%80%99ombre" },
+    { name: "Semaine 5 - La lumière contre l'ombre", path: "Semaine 5 - La lumière contre l'ombre", weekNumber: 5, codeSource : "Semaine%205%20-%20La%20lumi%C3%A8re%20contre%20l'ombre" },
 ];
 
 weeks.sort((a, b) => a.weekNumber - b.weekNumber);
@@ -59,7 +59,7 @@ function displayWeeks(filteredWeeks) {
         linksContainer.className = 'card-links';
 
         const codeLink = document.createElement('a');
-        codeLink.href = week.codeSource;
+        codeLink.href = `https://github.com/BryanDrouet/les-defis-de-batsave/tree/main/${week.codeSource}`;
         codeLink.className = 'card-btn';
         codeLink.target = '_blank';
         
