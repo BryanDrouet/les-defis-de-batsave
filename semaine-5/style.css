@@ -80,18 +80,30 @@ h2 i, h3 i, h4 i, strong i {
     width: 100%;
 }
 
-.card {
+.card, .theme-teaser {
     display: flex;
     flex-direction: column;
     background: white;
     padding: 25px;
     border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    filter: drop-shadow(3px 3px 0px #00000038);
     align-items: flex-start;
     justify-content: flex-start;
     gap: 10px;
     flex: 1 1 250px;
     max-width: 100%;
+}
+
+.theme-teaser {
+    filter: drop-shadow(3px 3px 0px #00000038);
+    background: #2c3e50;
+    flex: none;
+    color: white;
+    gap: 10px;
+}
+
+.theme-teaser h3 {
+    color: #f1c40f;
 }
 
 .card h4 {
@@ -110,20 +122,6 @@ h2 i, h3 i, h4 i, strong i {
     color: #e67e22;
 }
 
-.theme-teaser {
-    padding: 25px;
-    background: #2c3e50;
-    color: white;
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.theme-teaser h3 {
-    color: #f1c40f;
-}
-
 .poster-container {
     display: flex;
     justify-content: center;
@@ -135,15 +133,15 @@ h2 i, h3 i, h4 i, strong i {
     height: 100px;
     aspect-ratio: 1/1;
     border-radius: 6px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    filter: drop-shadow(3px 3px 0px #00000038);
     transform: rotate(-3deg);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.3s ease-in-out, filter 0.3s ease-in-out;
     margin: 3px;
 }
 
 .wanted-poster:hover {
     transform: rotate(0deg) scale(1.05);
-    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+    filter: drop-shadow(3px 3px 0px #00000054);
 }
 
 .progress-section {
@@ -153,13 +151,14 @@ h2 i, h3 i, h4 i, strong i {
     background: white;
     padding: 20px;
     border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    filter: drop-shadow(3px 3px 0px #00000038);
 }
 
 .progress-footer {
     display: flex;
     justify-content: space-between;
     gap: 10px;
+    align-items: center;
 }
 
 .progress-header {
@@ -185,7 +184,7 @@ h2 i, h3 i, h4 i, strong i {
 .progress-percentage {
     font-weight: bold;
     color: #3498db;
-    width: 51px;
+    width: stretch;
     text-align: right;
 }
 
@@ -245,10 +244,10 @@ h2 i, h3 i, h4 i, strong i {
 
     .progress-footer {
         flex-direction: column;
-        gap: 10px;
+        align-items: flex-start;
     }
 
-    .progress-status {
+    .progress-footer * {
         text-align: left;
     }
 }

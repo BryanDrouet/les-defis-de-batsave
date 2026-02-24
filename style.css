@@ -118,13 +118,13 @@ header nav a.active:hover {
     border: 1px solid #ddd;
     border-radius: 25px;
     background-color: white;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    filter: drop-shadow(3px 3px 0px #00000038);
+    transition: border-color 0.3s ease, filter 0.3s ease;
 }
 
 .search-bar:hover input {
     border-color: #999;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    filter: drop-shadow(3px 3px 0px #00000054);
 }
 
 .search-bar:hover .search-icon {
@@ -155,7 +155,7 @@ header nav a.active:hover {
     background-color: white;
     border: 1px solid #ddd;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    filter: drop-shadow(3px 3px 0px #00000038);
     width: 400px;
     padding: 1rem;
     text-align: center;
