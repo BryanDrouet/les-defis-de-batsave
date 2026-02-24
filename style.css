@@ -223,7 +223,7 @@ a:not(header nav a):not(.card a):hover {
 
 iframe {
     width: 100%;
-    aspect-ratio: 1/1;
+    aspect-ratio: 2/3;
     zoom: 70%;
     border: none;
     border-left: 1px solid #ddd;
