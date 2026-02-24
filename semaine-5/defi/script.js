@@ -63,6 +63,7 @@ let autoLight = {
     dy: 4
 };
 
+// Références DOM
 const board = document.getElementById('game-board');
 const scoreEl = document.getElementById('score');
 const timerEl = document.getElementById('timer');
@@ -78,17 +79,25 @@ const uiBar = document.querySelector('.ui-bar');
 const bestScoreDisplay = document.getElementById('best-score-display');
 const container = document.querySelector('.game-container');
 const buttonGroup = document.querySelector('.button-group');
+const countdownOverlay = document.getElementById('countdown-overlay');
 
+// Modals
 const settingsModal = document.getElementById('settings-modal');
 const settingsBtn = document.getElementById('settings-btn');
 const closeSettingsBtn = document.getElementById('close-settings');
+const quitGameBtn = document.getElementById('quit-game-btn'); // Nouveau bouton quitter
+
+const leaderboardModal = document.getElementById('leaderboard-modal');
+const leaderboardBtn = document.getElementById('leaderboard-btn');
+const closeLeaderboardBtn = document.getElementById('close-leaderboard');
+
 const musicSlider = document.getElementById('music-slider');
 const sfxSlider = document.getElementById('sfx-slider');
-const diffBtns = document.querySelectorAll('.diff-btn');
-const diffDesc = document.getElementById('diff-desc');
 
 warningText.textContent = `Attention : à partir du niveau ${CHAOS_MODE_LEVEL} le chaos arrive...`;
 timerEl.textContent = START_TIME;
+
+/* --- GESTION PAUSE & MODALS --- */
 
 function togglePause(pauseState) {
     if (!isPlaying) return;
@@ -102,33 +111,77 @@ function togglePause(pauseState) {
     }
 }
 
-function openSettings() {
+function openModal(modal) {
     togglePause(true);
-    settingsModal.classList.remove('hidden'); 
+    
+    // Logique spécifique pour les paramètres : Afficher/Cacher le bouton Quitter
+    if (modal === settingsModal) {
+        if (isPlaying) {
+            quitGameBtn.style.display = 'block';
+        } else {
+            quitGameBtn.style.display = 'none';
+        }
+    }
+
+    modal.classList.remove('hidden'); 
     requestAnimationFrame(() => {
-        settingsModal.classList.add('visible');
+        modal.classList.add('visible');
     });
 }
 
-function closeSettings() {
-    settingsModal.classList.remove('visible');
+function closeModal(modal) {
+    modal.classList.remove('visible');
+    
     setTimeout(() => {
-        if (!settingsModal.classList.contains('visible')) {
-           settingsModal.classList.add('hidden');
+        if (!modal.classList.contains('visible')) {
+           modal.classList.add('hidden');
+           
+           // Si on ferme une modal et qu'aucune autre n'est ouverte
+           const anyVisible = document.querySelectorAll('.modal.visible').length > 0;
+           
+           if (!anyVisible) {
+               if (isPlaying) {
+                   startResumeCountdown();
+               } else {
+                   togglePause(false);
+               }
+           }
         }
     }, 300);
-    togglePause(false);
 }
 
-settingsBtn.addEventListener('click', openSettings);
-closeSettingsBtn.addEventListener('click', closeSettings);
+function startResumeCountdown() {
+    let count = 3;
+    countdownOverlay.classList.remove('hidden');
+    countdownOverlay.textContent = count;
+    
+    const countInt = setInterval(() => {
+        count--;
+        if (count > 0) {
+            countdownOverlay.textContent = count;
+        } else {
+            clearInterval(countInt);
+            countdownOverlay.classList.add('hidden');
+            togglePause(false);
+        }
+    }, 1000);
+}
 
-settingsModal.addEventListener('click', (e) => {
-    if (e.target === settingsModal) {
-        closeSettings();
-    }
+// Event Listeners Modals
+settingsBtn.addEventListener('click', () => openModal(settingsModal));
+closeSettingsBtn.addEventListener('click', () => closeModal(settingsModal));
+
+leaderboardBtn.addEventListener('click', () => openModal(leaderboardModal));
+closeLeaderboardBtn.addEventListener('click', () => closeModal(leaderboardModal));
+
+// Clic extérieur pour fermer
+[settingsModal, leaderboardModal].forEach(modal => {
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal(modal);
+    });
 });
 
+// Sliders Audio
 musicSlider.addEventListener('input', (e) => {
     settings.musicVolume = parseFloat(e.target.value);
     audio.music.volume = settings.musicVolume;
@@ -140,26 +193,50 @@ sfxSlider.addEventListener('input', (e) => {
     document.getElementById('sfx-val').textContent = Math.round(settings.sfxVolume * 100) + '%';
 });
 
-const modeInfos = {
-    simple: "Mode Simple : 50% de personnages en moins. Idéal pour débuter.",
-    normal: "Mode Normal : L'expérience originale.",
-    hard: "Mode Difficile : 50% de personnages en plus. Bonne chance."
-};
-
-diffBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        updateDifficultyUI(btn.dataset.mode);
+// LOGIQUE QUITTER LA PARTIE
+if(quitGameBtn) {
+    quitGameBtn.addEventListener('click', () => {
+        if(confirm("Voulez-vous vraiment abandonner la partie en cours ?")) {
+            // Fermer la modal sans déclencher le compte à rebours
+            settingsModal.classList.remove('visible');
+            setTimeout(() => settingsModal.classList.add('hidden'), 300);
+            
+            // Arrêter le jeu
+            quitGame();
+        }
     });
-});
-
-function updateDifficultyUI(mode) {
-    settings.gameMode = mode;
-    diffBtns.forEach(b => {
-        if (b.dataset.mode === mode) b.classList.add('active');
-        else b.classList.remove('active');
-    });
-    if(diffDesc) diffDesc.textContent = modeInfos[mode];
 }
+
+function quitGame() {
+    isPlaying = false;
+    isPaused = false;
+    cancelAnimationFrame(animationFrameId); 
+    clearInterval(timerInterval);
+    
+    // Pas de sauvegarde de score ici, c'est un abandon
+    localStorage.removeItem('wanted_current_session');
+    
+    audio.music.pause();
+    
+    // Reset UI
+    uiBar.classList.add('hidden');
+    board.innerHTML = ''; // Nettoyer le plateau
+    shadowOverlay.classList.remove('active');
+    
+    // Reset Écran Titre
+    overlayTitle.textContent = "WANTED!";
+    overlayDesc.textContent = "Trouve le personnage affiché avant la fin du temps.";
+    warningText.classList.remove('hidden');
+    
+    // Afficher l'écran titre
+    overlayScreen.classList.remove('hidden');
+    initStartScreen();
+    
+    // S'assurer que les boutons du haut sont visibles
+    document.querySelector('.top-buttons').style.display = 'flex';
+}
+
+/* --- FONCTIONS JEU --- */
 
 const saveGame = () => {
     if(!isPlaying) return;
@@ -175,7 +252,6 @@ const loadSession = () => {
         timeLeft = data.timeLeft;
         if(data.gameMode) {
             settings.gameMode = data.gameMode;
-            updateDifficultyUI(data.gameMode);
         }
         return true;
     }
@@ -239,6 +315,7 @@ document.addEventListener('pointermove', (e) => {
     }
 });
 
+/* --- LEADERBOARD LOGIC --- */
 document.addEventListener('DOMContentLoaded', () => {
     loadLeaderboard();
     
@@ -454,7 +531,8 @@ function startGame(isResume = false) {
     overlayScreen.classList.add('hidden');
     warningText.classList.add('hidden');
     
-    settingsBtn.style.display = 'none';
+    // En jeu, le bouton settings reste visible
+    document.querySelector('.top-buttons').style.display = 'flex';
     
     isUserTouching = false; 
     
@@ -516,6 +594,7 @@ function startLevel() {
     let sharedDirX = 0;
     let sharedDirY = 0;
 
+    // --- LOGIQUE CHAOS ---
     if (level >= CHAOS_MODE_LEVEL) {
         levelBehavior = Math.random() < 0.5 ? 'bounce' : 'wrap';
         const speedProgress = Math.min((level - CHAOS_MODE_LEVEL) / (CHAOS_MAX_SPEED_LEVEL - CHAOS_MODE_LEVEL), 1);
@@ -548,18 +627,27 @@ function startLevel() {
             sharedDirX = (Math.random() < 0.5 ? -1 : 1) * currentSpeed;
             sharedDirY = (Math.random() < 0.5 ? -1 : 1) * currentSpeed;
         }
-    }
-
-    if (level >= CHAOS_MODE_LEVEL) {
+        
+        // CSS pour Chaos
         board.style.display = 'block'; 
         board.style.position = 'relative';
-    } else {
+        board.style.gridTemplateColumns = 'none'; // Reset grid styles
+        board.style.gridTemplateRows = 'none';
+    } 
+    // --- LOGIQUE GRID (MODE NORMAL) ---
+    else {
         board.style.display = 'grid';
         let cols = Math.ceil(Math.sqrt(totalCharacters));
+        let rows = Math.ceil(totalCharacters / cols);
+        
+        // FIX : Force totalCharacters à remplir parfaitement la grille
+        totalCharacters = cols * rows;
+
         board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-        board.style.gridTemplateRows = `repeat(${Math.ceil(totalCharacters / cols)}, 1fr)`;
+        board.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
     }
     
+    // --- GESTION LUMIERE ---
     if (level >= DARK_MODE_LEVEL) {
         shadowOverlay.classList.add('active');
         shadowOverlay.classList.remove('hidden');
@@ -712,7 +800,7 @@ function gameOver() {
     
     initStartScreen();
     
-    settingsBtn.style.display = 'flex';
+    document.querySelector('.top-buttons').style.display = 'flex';
     
     overlayScreen.classList.remove('hidden');
     shadowOverlay.classList.remove('active');
@@ -723,6 +811,10 @@ function initStartScreen() {
     if(existingDiffContainer) existingDiffContainer.remove();
 
     const hasSession = localStorage.getItem('wanted_current_session') !== null;
+    
+    if (!hasSession) {
+        overlayDesc.textContent = "Trouve le personnage affiché avant la fin du temps.";
+    }
     
     if (hasSession) {
         startBtn.classList.remove('hidden');
@@ -758,7 +850,7 @@ function initStartScreen() {
             btn.textContent = m.label;
             btn.style.width = '200px'; 
             btn.onclick = () => {
-                updateDifficultyUI(m.id);
+                settings.gameMode = m.id; // Mise à jour directe
                 startGame(false);
             };
             diffContainer.appendChild(btn);

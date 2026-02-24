@@ -24,7 +24,11 @@
     <meta name="twitter:image" content="https://defis-batsave.bryan.ovh/semaine-5/defi/assets/icon.jpg">
 
     <link rel="icon" type="image/x-icon" href="assets/icon.ico">
-    <link rel="stylesheet" href="style.css">
+    
+    <script>
+        document.write('<link rel="stylesheet" href="style.css?v=' + Date.now() + '">');
+    </script>
+    
     <script src="https://cdn.jsdelivr.net/npm/showdown/dist/showdown.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -47,13 +51,20 @@
             </div>
         </header>
         
-        <button id="settings-btn" class="settings-btn" title="Paramètres">
-            <i data-lucide="settings"></i>
-        </button>
+        <div class="top-buttons">
+            <button id="leaderboard-btn" class="settings-btn" title="Classement">
+                <i data-lucide="trophy"></i>
+            </button>
+            <button id="settings-btn" class="settings-btn" title="Paramètres">
+                <i data-lucide="settings"></i>
+            </button>
+        </div>
 
         <main id="game-board" class="board"></main>
 
         <div id="shadow-overlay" class="hidden"></div>
+        
+        <div id="countdown-overlay" class="hidden"></div>
 
         <div id="overlay-screen" class="overlay">
             <div class="message-box">
@@ -69,16 +80,17 @@
                     </div>
                 </div>
             </div>
-            
-            <div class="leaderboard-section">
-                <div class="lb-header">
-                    <h3><i data-lucide="trophy"></i> Tableau des scores</h3>
-                    <div class="search-container">
-                        <i data-lucide="search" class="search-icon"></i>
-                        <input type="text" id="lb-search" placeholder="Rechercher un joueur..." aria-label="Rechercher un joueur">
-                    </div>
-                </div>
+        </div>
+
+        <div id="leaderboard-modal" class="modal hidden">
+            <div class="modal-content">
+                <h1>CLASSEMENT</h1>
                 
+                <div class="search-container" style="margin-bottom: 15px;">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" id="lb-search" placeholder="Rechercher..." aria-label="Rechercher un joueur">
+                </div>
+
                 <div class="table-wrapper">
                     <table id="leaderboard-table">
                         <thead>
@@ -93,6 +105,8 @@
                     </table>
                 </div>
                 <p id="lb-loading">Chargement des scores...</p>
+
+                <button id="close-leaderboard" style="margin-top: 20px;">FERMER</button>
             </div>
         </div>
 
@@ -108,8 +122,14 @@
                     <label for="sfx-slider">Effets (SFX) <span id="sfx-val">100%</span></label>
                     <input type="range" id="sfx-slider" min="0" max="1" step="0.05" value="1">
                 </div>
+                
+                <div class="setting-group">
+                    <button id="quit-game-btn" class="diff-btn mode-hard" style="width:100%; margin-top:10px; display:none;">
+                        ABANDONNER LA PARTIE
+                    </button>
+                </div>
 
-                <button id="close-settings">FERMER</button>
+                <button id="close-settings" style="margin-top: 20px;">FERMER</button>
             </div>
         </div>
     </div>
