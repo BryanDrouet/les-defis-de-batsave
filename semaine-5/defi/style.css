@@ -69,7 +69,8 @@ body {
     height: 100%;
     padding: 15px;
     flex-wrap: wrap;
-    justify-content: center
+    justify-content: center;
+    gap: 15px;
 }
 
 .score-box *, .timer-box * {
