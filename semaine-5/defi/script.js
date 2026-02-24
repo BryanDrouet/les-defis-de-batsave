@@ -67,7 +67,7 @@ const uiBar = document.querySelector('.ui-bar');
 const bestScoreDisplay = document.getElementById('best-score-display');
 const container = document.querySelector('.game-container');
 
-warningText.textContent = `Attention : À partir du niveau ${CHAOS_MODE_LEVEL} le chaos arrive...`;
+warningText.textContent = `Attention : à partir du niveau ${CHAOS_MODE_LEVEL} le chaos arrive...`;
 timerEl.textContent = START_TIME;
 
 const saveGame = () => {
