@@ -250,16 +250,10 @@ body {
 }
 
 .message-box p {
-    font-size: 2.5rem;
+    max-width: 600px;
+    font-size: 2rem;
     margin-bottom: 10px;
     margin-top: 0;
-}
-
-.message-box .warning {
-    color: var(--col-diff-hard);
-    font-size: 2rem;
-    font-style: italic;
-    margin: 0;
 }
 
 button {
@@ -313,7 +307,7 @@ button:active {
     align-items: center;
     gap: 20px;
     z-index: 5;
-    margin-top: 87px;
+    margin-top: 50px;
 }
 
 .best-score-badge {
@@ -358,7 +352,6 @@ button:active {
 }
 
 .settings-btn {
-    /* Reset position attributes handled by container */
     z-index: 50;
     width: 50px;
     height: 50px;
@@ -448,10 +441,19 @@ th {
     position: sticky;
     top: 0;
     cursor: pointer;
-    text-align: left;
+    display: table-cell; 
+    text-align: center;
+    vertical-align: middle;
     font-family: 'Screenlogger', sans-serif;
     border-bottom: 4px solid var(--col-red-dark);
     z-index: 5;
+}
+
+th .sort-icon {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 10px;
+    margin-bottom: 3px;
 }
 
 th:hover {
@@ -687,6 +689,14 @@ input[type=range]::-webkit-slider-runnable-track {
     max-width: 80%;
 }
 
+.difficulty-start-container {
+    align-items: center;
+}
+
+.difficulty-start-container p {
+    margin-bottom: 20px !important;
+}
+
 @keyframes popIn {
     0% { transform: scale(0); opacity: 0; }
     80% { transform: scale(1.1); opacity: 1; }
@@ -694,9 +704,8 @@ input[type=range]::-webkit-slider-runnable-track {
 }
 
 @media (max-width: 480px) {
-    .message-box h1 { font-size: 4.5rem; margin-bottom: 20px; }
-    .message-box p { font-size: 1.5rem; }
-    .message-box .warning { font-size: 1.5rem !important; }
+    .message-box h1 { font-size: 4rem; margin-bottom: 20px; }
+    .message-box p { font-size: 1.5rem; max-width: 90%; }
     .table-wrapper { max-height: 250px; }
     .message-box { justify-content: flex-start; gap: 15px; }
     .button-group { flex-direction: column; }

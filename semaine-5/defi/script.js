@@ -72,7 +72,6 @@ const shadowOverlay = document.getElementById('shadow-overlay');
 const overlayScreen = document.getElementById('overlay-screen');
 const overlayTitle = document.getElementById('overlay-title');
 const overlayDesc = document.getElementById('overlay-desc');
-const warningText = document.getElementById('warning-text');
 const startBtn = document.getElementById('start-btn');
 const resetBtn = document.getElementById('reset-btn');
 const uiBar = document.querySelector('.ui-bar');
@@ -94,7 +93,6 @@ const closeLeaderboardBtn = document.getElementById('close-leaderboard');
 const musicSlider = document.getElementById('music-slider');
 const sfxSlider = document.getElementById('sfx-slider');
 
-warningText.textContent = `Attention : à partir du niveau ${CHAOS_MODE_LEVEL} le chaos arrive...`;
 timerEl.textContent = START_TIME;
 
 /* --- GESTION PAUSE & MODALS --- */
@@ -226,7 +224,6 @@ function quitGame() {
     // Reset Écran Titre
     overlayTitle.textContent = "WANTED!";
     overlayDesc.textContent = "Trouve le personnage affiché avant la fin du temps.";
-    warningText.classList.remove('hidden');
     
     // Afficher l'écran titre
     overlayScreen.classList.remove('hidden');
@@ -529,7 +526,6 @@ function startGame(isResume = false) {
     timerEl.textContent = timeLeft;
     
     overlayScreen.classList.add('hidden');
-    warningText.classList.add('hidden');
     
     // En jeu, le bouton settings reste visible
     document.querySelector('.top-buttons').style.display = 'flex';
@@ -795,8 +791,6 @@ function gameOver() {
     overlayDesc.innerHTML = `Score : ${score}`;
     
     if (best > 0) bestScoreDisplay.classList.remove('hidden');
-
-    warningText.classList.add('hidden');
     
     initStartScreen();
     
@@ -830,7 +824,7 @@ function initStartScreen() {
         diffContainer.className = 'difficulty-start-container';
         diffContainer.style.display = 'flex';
         diffContainer.style.flexDirection = 'column';
-        diffContainer.style.gap = '15px';
+        diffContainer.style.gap = '20px';
         diffContainer.style.marginTop = '20px';
 
         const label = document.createElement('p');
@@ -873,9 +867,7 @@ window.onload = () => {
     const hasSession = loadSession();
     if (hasSession) {
         document.getElementById('overlay-desc').textContent = `Niveau ${level} - Score ${score}`;
-        warningText.classList.add('hidden');
     } else {
-        warningText.classList.remove('hidden');
     }
 
     initStartScreen();
