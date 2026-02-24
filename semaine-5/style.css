@@ -95,7 +95,7 @@ h2 i, h3 i, h4 i, strong i {
 }
 
 .theme-teaser {
-    filter: drop-shadow(3px 3px 0px #00000038);
+    filter: drop-shadow(3px 3px 0px #00000050) !important;
     background: #2c3e50;
     flex: none;
     color: white;
