@@ -63,6 +63,31 @@
                     <button id="start-btn">COMMENCER</button>
                     <button id="reset-btn" class="hidden">RECOMMENCER</button>
                 </div>
+
+                <div class="leaderboard-section">
+                    <div class="lb-header">
+                        <h3><i data-lucide="trophy"></i> Tableau des scores</h3>
+                        <div class="search-container">
+                            <i data-lucide="search" class="search-icon"></i>
+                            <input type="text" id="lb-search" placeholder="Rechercher un joueur...">
+                        </div>
+                    </div>
+                    
+                    <div class="table-wrapper">
+                        <table id="leaderboard-table">
+                            <thead>
+                                <tr>
+                                    <th data-sort="pseudo">Joueur <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                                    <th data-sort="score">Score <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                                    <th data-sort="date">Date <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                                </tr>
+                            </thead>
+                            <tbody id="lb-body">
+                                </tbody>
+                        </table>
+                    </div>
+                    <p id="lb-loading">Chargement des scores...</p>
+                </div>
             </div>
         </div>
     </div>

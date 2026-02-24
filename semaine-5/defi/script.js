@@ -42,6 +42,9 @@ let timerInterval = null;
 let currentTarget = '';
 let isPlaying = false;
 
+let allRecords = [];
+let sortState = { column: 'score', direction: 'desc' };
+
 let animationFrameId = null;
 let movingCharacters = []; 
 
@@ -140,6 +143,126 @@ document.addEventListener('pointermove', (e) => {
         updateLightPosition(e);
     }
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadLeaderboard();
+    
+    document.getElementById('lb-search').addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        const filtered = allRecords.filter(r => r.pseudo.toLowerCase().includes(term));
+        renderTable(filtered);
+    });
+
+    document.querySelectorAll('#leaderboard-table th[data-sort]').forEach(th => {
+        th.addEventListener('click', () => {
+            const column = th.dataset.sort;
+            if (sortState.column === column) {
+                sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortState.column = column;
+                sortState.direction = 'desc';
+                if (column === 'pseudo') sortState.direction = 'asc';
+            }
+            sortRecords();
+        });
+    });
+});
+
+async function loadLeaderboard() {
+    const loadingMsg = document.getElementById('lb-loading');
+    try {
+        const response = await fetch('records.json'); 
+        if (!response.ok) throw new Error("Fichier introuvable");
+        
+        allRecords = await response.json();
+        
+        sortRecords();
+        
+        loadingMsg.style.display = 'none';
+    } catch (error) {
+        console.error("Erreur leaderboard:", error);
+        loadingMsg.textContent = "Impossible de charger les scores.";
+    }
+}
+
+function sortRecords() {
+    const { column, direction } = sortState;
+    const modifier = direction === 'asc' ? 1 : -1;
+
+    allRecords.sort((a, b) => {
+        let valA = a[column];
+        let valB = b[column];
+
+        if (column === 'date') {
+            valA = parseDate(valA);
+            valB = parseDate(valB);
+        }
+        else if (column === 'score') {
+            valA = Number(valA);
+            valB = Number(valB);
+        }
+        else {
+            valA = valA.toString().toLowerCase();
+            valB = valB.toString().toLowerCase();
+        }
+
+        if (valA < valB) return -1 * modifier;
+        if (valA > valB) return 1 * modifier;
+        return 0;
+    });
+
+    const searchTerm = document.getElementById('lb-search').value.toLowerCase();
+    const filtered = allRecords.filter(r => r.pseudo.toLowerCase().includes(searchTerm));
+    
+    renderTable(filtered);
+    updateSortIcons();
+}
+
+function renderTable(data) {
+    const tbody = document.getElementById('lb-body');
+    tbody.innerHTML = '';
+
+    data.forEach(record => {
+        const tr = document.createElement('tr');
+        
+        let pseudoHtml = record.pseudo;
+        if (record.proof && record.proof.trim() !== "") {
+            pseudoHtml += ` <a href="${record.proof}" target="_blank" title="Voir la preuve" class="proof-link">
+                <i data-lucide="external-link" style="width:14px;height:14px;"></i>
+            </a>`;
+        }
+
+        tr.innerHTML = `
+            <td>${pseudoHtml}</td>
+            <td>${record.score}</td>
+            <td>${record.date}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    if (window.lucide) lucide.createIcons();
+}
+
+function parseDate(dateStr) {
+    const parts = dateStr.split('/');
+    return new Date(parts[2], parts[1] - 1, parts[0]).getTime();
+}
+
+function updateSortIcons() {
+    document.querySelectorAll('th .sort-icon').forEach(icon => {
+        icon.setAttribute('data-lucide', 'arrow-up-down');
+        icon.style.opacity = '0.3';
+    });
+
+    const activeTh = document.querySelector(`th[data-sort="${sortState.column}"]`);
+    if (activeTh) {
+        const activeIcon = activeTh.querySelector('.sort-icon');
+        const iconName = sortState.direction === 'asc' ? 'arrow-up' : 'arrow-down';
+        activeIcon.setAttribute('data-lucide', iconName);
+        activeIcon.style.opacity = '1';
+    }
+    if (window.lucide) lucide.createIcons();
+}
 
 function updateLightPosition(e) {
     const rect = container.getBoundingClientRect();
