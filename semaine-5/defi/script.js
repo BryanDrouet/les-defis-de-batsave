@@ -1,20 +1,23 @@
-/* --- CONFIGURATION --- */
 const CHARACTERS = ['Mario', 'Luigi', 'Wario', 'Yoshi'];
-const START_TIME = 10;
+const START_TIME = 15;
 const TIME_BONUS = 5;
 
-// Difficulté et ambiance
 const DARK_MODE_LEVEL = 5;
-const CHAOS_MODE_LEVEL = 20; // 🟢 Niveau où ça bouge
+const CHAOS_MODE_LEVEL = 20;
 
-// Lumière
+const MIN_SPEED = 2;
+const MAX_SPEED = 15;
+const SPEED_INCREMENT = 0.2;
+
+const MIN_CHAOS_CHARS = 36;
+const MAX_CHAOS_CHARS = 108;
+
 const MAX_LIGHT_RADIUS = 500; 
 const MIN_LIGHT_RADIUS = 70;  
 const LIGHT_SHRINK_STEP = 40;
-const MIN_SHADOW_OPACITY = 0.75;
-const MAX_SHADOW_OPACITY = 0.95;
+const MIN_SHADOW_OPACITY = 0.5;
+const MAX_SHADOW_OPACITY = 0.89;
 
-/* --- SONS --- */
 const audio = {
     caught: [
         new Audio('assets/audio/luigiCaught1.wav'),
@@ -28,7 +31,6 @@ const audio = {
 audio.music.loop = true;
 audio.music.volume = 0.3;
 
-/* --- VARIABLES D'ÉTAT --- */
 let score = 0;
 let level = 1;
 let timeLeft = START_TIME;
@@ -36,11 +38,9 @@ let timerInterval = null;
 let currentTarget = '';
 let isPlaying = false;
 
-// Variables pour le mouvement (Chaos Mode)
 let animationFrameId = null;
-let movingCharacters = []; // Stocke les infos de mouvement {el, x, y, dx, dy, width, height}
+let movingCharacters = []; 
 
-/* --- DOM ELEMENTS --- */
 const board = document.getElementById('game-board');
 const scoreEl = document.getElementById('score');
 const timerEl = document.getElementById('timer');
@@ -53,10 +53,8 @@ const startBtn = document.getElementById('start-btn');
 const resetBtn = document.getElementById('reset-btn');
 const uiBar = document.querySelector('.ui-bar');
 
-/* --- INITIALISATION TEXTE --- */
 warningText.textContent = `Attention : À partir du niveau ${DARK_MODE_LEVEL}, les ténèbres arrivent...`;
 
-/* --- STOCKAGE --- */
 const saveGame = () => {
     if(!isPlaying) return;
     localStorage.setItem('wanted_current_session', JSON.stringify({ score, level, timeLeft }));
@@ -81,7 +79,6 @@ const updateBestScore = () => {
     }
 };
 
-/* --- LAMPE TORCHE --- */
 function updateFlashlight(x, y) {
     if (level >= DARK_MODE_LEVEL && isPlaying) {
         const uiHeight = uiBar.offsetHeight;
@@ -101,11 +98,9 @@ document.addEventListener('touchmove', (e) => {
     updateFlashlight(touch.clientX - rect.left, touch.clientY - rect.top);
 }, { passive: true });
 
-/* --- BOUCLE D'ANIMATION (CHAOS MODE) --- */
 function gameLoop() {
     if (!isPlaying) return;
 
-    // Si on est en mode Chaos, on bouge les personnages
     if (level >= CHAOS_MODE_LEVEL) {
         moveCharacters();
     }
@@ -119,27 +114,22 @@ function moveCharacters() {
     const maxY = boardRect.height;
 
     movingCharacters.forEach(char => {
-        // Mise à jour position
         char.x += char.dx;
         char.y += char.dy;
 
-        // Logique de rebond ou téléportation
-        // Ici on fait rebond sur les murs
         if (char.x <= 0 || char.x + char.width >= maxX) {
-            char.dx *= -1; // Inverse direction X
-            char.x = Math.max(0, Math.min(char.x, maxX - char.width)); // Évite blocage mur
+            char.dx *= -1;
+            char.x = Math.max(0, Math.min(char.x, maxX - char.width));
         }
         if (char.y <= 0 || char.y + char.height >= maxY) {
-            char.dy *= -1; // Inverse direction Y
+            char.dy *= -1;
             char.y = Math.max(0, Math.min(char.y, maxY - char.height));
         }
 
-        // Applique la position
         char.el.style.transform = `translate(${char.x}px, ${char.y}px)`;
     });
 }
 
-/* --- FONCTIONS DU JEU --- */
 function startGame(isResume = false) {
     if (!isResume) {
         score = 0;
@@ -159,7 +149,7 @@ function startGame(isResume = false) {
     audio.music.play().catch(() => {});
 
     startLevel();
-    gameLoop(); // 🟢 Lance la boucle d'animation
+    gameLoop(); 
     
     if (timerInterval) clearInterval(timerInterval);
     timerInterval = setInterval(() => {
@@ -175,19 +165,23 @@ function startGame(isResume = false) {
 
 function startLevel() {
     board.innerHTML = '';
-    movingCharacters = []; // Reset des objets mouvants
+    movingCharacters = []; 
 
-    // --- 1. Grille et Nombre de persos ---
-    let totalCharacters = 4; 
-    if (level >= 3) totalCharacters = 9;
-    if (level >= 6) totalCharacters = 16;
-    if (level >= 10) totalCharacters = 25;
-    if (level >= 15) totalCharacters = 36;
-    if (level >= 20) totalCharacters = 20; // 🟢 On réduit un peu pour le mode Chaos sinon c'est injouable
-
-    // En mode Chaos, on enlève la grille CSS pour du positionnement absolu
+    let totalCharacters;
+    
     if (level >= CHAOS_MODE_LEVEL) {
-        board.style.display = 'block'; // Plus de grid
+        const chaosProgress = Math.min((level - CHAOS_MODE_LEVEL) * 2, MAX_CHAOS_CHARS - MIN_CHAOS_CHARS);
+        totalCharacters = MIN_CHAOS_CHARS + chaosProgress;
+    } else {
+        totalCharacters = 4;
+        if (level >= 3) totalCharacters = 9;
+        if (level >= 6) totalCharacters = 16;
+        if (level >= 10) totalCharacters = 25;
+        if (level >= 15) totalCharacters = 36;
+    }
+
+    if (level >= CHAOS_MODE_LEVEL) {
+        board.style.display = 'block'; 
         board.style.position = 'relative';
     } else {
         board.style.display = 'grid';
@@ -196,7 +190,6 @@ function startLevel() {
         board.style.gridTemplateRows = `repeat(${Math.ceil(totalCharacters / cols)}, 1fr)`;
     }
     
-    // --- 2. Ombre ---
     if (level >= DARK_MODE_LEVEL) {
         shadowOverlay.classList.add('active');
         shadowOverlay.classList.remove('hidden');
@@ -215,19 +208,17 @@ function startLevel() {
         shadowOverlay.style.setProperty('--opacity', 0);
     }
 
-    // --- 3. Génération des Persos ---
     currentTarget = CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)];
     targetImg.src = `assets/img/wanted${currentTarget}.png`;
 
     const targetIndex = Math.floor(Math.random() * totalCharacters);
-    const boardRect = board.getBoundingClientRect(); // Taille réelle du plateau
+    const boardRect = board.getBoundingClientRect(); 
 
     for (let i = 0; i < totalCharacters; i++) {
         const img = document.createElement('img');
         img.classList.add('character');
         img.setAttribute('draggable', false);
         
-        // Choix image
         if (i === targetIndex) {
             img.src = `assets/img/sprite${currentTarget}.png`;
             img.dataset.type = 'target';
@@ -239,26 +230,21 @@ function startLevel() {
             img.dataset.type = 'wrong';
         }
 
-        // 🟢 INITIALISATION POSITION CHAOS
         if (level >= CHAOS_MODE_LEVEL) {
             img.style.position = 'absolute';
-            img.style.width = '60px'; // Taille fixe
+            img.style.width = '60px';
             img.style.height = '60px';
             
-            // Position aléatoire de départ
             const startX = Math.random() * (boardRect.width - 60);
             const startY = Math.random() * (boardRect.height - 60);
             
-            // Vitesse qui augmente tous les 2 niveaux
-            // (Level 20 = BaseSpeed, Level 22 = +Fast, etc.)
-            const speedMultiplier = 1 + ((level - 20) * 0.2); 
-            const baseSpeed = 2;
-            
-            // Direction aléatoire
-            const dirX = (Math.random() < 0.5 ? -1 : 1) * baseSpeed * speedMultiplier;
-            const dirY = (Math.random() < 0.5 ? -1 : 1) * baseSpeed * speedMultiplier;
+            const levelsOverChaos = Math.floor((level - CHAOS_MODE_LEVEL) / 2);
+            let currentSpeed = MIN_SPEED + (levelsOverChaos * SPEED_INCREMENT);
+            currentSpeed = Math.min(currentSpeed, MAX_SPEED); // Plafond de vitesse
 
-            // On stocke les données pour l'animation
+            const dirX = (Math.random() < 0.5 ? -1 : 1) * currentSpeed;
+            const dirY = (Math.random() < 0.5 ? -1 : 1) * currentSpeed;
+
             movingCharacters.push({
                 el: img,
                 x: startX,
@@ -269,7 +255,6 @@ function startLevel() {
                 height: 60
             });
 
-            // On applique la position initiale sans transform pour éviter le flash
             img.style.left = '0px';
             img.style.top = '0px';
             img.style.transform = `translate(${startX}px, ${startY}px)`;
@@ -282,9 +267,6 @@ function startLevel() {
 
 function handleCharacterClick(e) {
     if (!isPlaying) return;
-    
-    // Si Chaos Mode, c'est dur de cliquer, donc on arrête l'animation un instant ? 
-    // Non, on garde la difficulté !
     
     if (e.target.dataset.type === 'target') {
         audio.caught[Math.floor(Math.random() * audio.caught.length)].play();
@@ -305,7 +287,7 @@ function handleCharacterClick(e) {
 
 function gameOver() {
     isPlaying = false;
-    cancelAnimationFrame(animationFrameId); // Stop l'animation
+    cancelAnimationFrame(animationFrameId); 
     clearInterval(timerInterval);
     updateBestScore();
     localStorage.removeItem('wanted_current_session');
