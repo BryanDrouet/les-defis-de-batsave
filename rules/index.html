@@ -22,8 +22,10 @@
     <meta name="twitter:description" content="Tout savoir sur les défis : le rythme hebdomadaire, la liberté de création et le fonctionnement du classement. Consultez le fonctionnement, les principes et la philosophie des défis créatifs hebdomadaires de la communauté Batsave.">
     <meta name="twitter:image" content="https://defis-batsave.bryan.ovh/icon.jpeg">
 
-    <link rel="icon" type="image/x-icon" href="icon.ico">
-    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="../icon.ico">
+    <link rel="stylesheet" href="../style.css">
+    <script src="https://cdn.jsdelivr.net/npm/showdown/dist/showdown.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         h2:first-child {
             margin-top: 0;
@@ -37,8 +39,8 @@
 <body>
     <header>
         <nav>
-            <a href="index.html">Sommaire</a>
-            <a href="#" class="active">Règles</a>
+            <a href="/"><i data-lucide="house"></i>Sommaire</a>
+            <a href="#" class="active"><i data-lucide="scale"></i>Règles</a>
         </nav>
     </header>
     <main>
@@ -50,7 +52,13 @@
     </main>
     <script src="https://cdn.jsdelivr.net/npm/showdown/dist/showdown.min.js"></script>
     <script>
-        fetch('README.md')
+        document.addEventListener("DOMContentLoaded", () => {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
+
+        fetch('../README.md')
             .then(response => {
                 if (!response.ok) throw new Error("Fichier non trouvé");
                 return response.text();
