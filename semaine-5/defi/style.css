@@ -344,10 +344,10 @@ button:active {
 /* Top Buttons Container */
 .top-buttons {
     position: absolute;
-    top: 20px;
-    right: 20px;
+    top: 17px;
+    right: 17px;
     display: flex;
-    gap: 15px;
+    gap: 20px;
     z-index: 50;
 }
 
