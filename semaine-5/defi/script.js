@@ -7,8 +7,6 @@ const MAX_LIGHT_RADIUS = 350;
 const MIN_LIGHT_RADIUS = 70;  
 const LIGHT_SHRINK_STEP = 30; 
 
-const isDebug = new URLSearchParams(window.location.search).get('debug') === 'true';
-
 const audio = {
     caught: [
         new Audio('assets/audio/luigiCaught1.wav'),
@@ -39,10 +37,19 @@ const overlayScreen = document.getElementById('overlay-screen');
 const overlayTitle = document.getElementById('overlay-title');
 const startBtn = document.getElementById('start-btn');
 
+const isDebug = new URLSearchParams(window.location.search).get('debug') === 'true';
+const uiBar = document.querySelector('.ui-bar');
+const timerBox = document.querySelector('.timer-box');
+
+if (isDebug && timerBox) {
+    timerBox.style.opacity = '0';
+}
+
 function updateFlashlight(x, y) {
     if (level >= DARK_MODE_LEVEL && isPlaying) {
+        const uiHeight = uiBar.offsetHeight;
         shadowOverlay.style.setProperty('--x', `${x}px`);
-        shadowOverlay.style.setProperty('--y', `${y}px`);
+        shadowOverlay.style.setProperty('--y', `${y - uiHeight}px`);
     }
 }
 
@@ -64,10 +71,14 @@ function startGame() {
     level = 1;
     timeLeft = START_TIME;
     isPlaying = true;
+    
+    uiBar.classList.remove('hidden');
+    
     scoreEl.textContent = score;
     timerEl.textContent = timeLeft;
     overlayScreen.classList.add('hidden');
     shadowOverlay.classList.remove('active');
+    
     audio.music.currentTime = 0;
     audio.music.play().catch(e => console.log("Audio autoplay bloqué", e));
 
@@ -182,6 +193,8 @@ function gameOver() {
     clearInterval(timerInterval);
     audio.music.pause();
     audio.timeup.play();
+
+    uiBar.classList.add('hidden');
 
     overlayTitle.textContent = "GAME OVER";
     document.getElementById('overlay-desc').textContent = `Score final : ${score}`;
