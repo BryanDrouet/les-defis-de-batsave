@@ -17,6 +17,7 @@ a {
     color: #3498db;
     font-weight: bold;
     text-decoration: none;
+    word-break: break-word; 
     background-image: linear-gradient(#52baff, #52baff);
     background-position: left bottom;
     background-size: 0% 2px;

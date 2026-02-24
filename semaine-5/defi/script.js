@@ -1,4 +1,5 @@
 const CHARACTERS = ['Mario', 'Luigi', 'Wario', 'Yoshi'];
+const ADVANCED_CHAOS_LEVEL = 30;
 const START_TIME = 10;
 const TIME_BONUS = 5;
 
@@ -154,6 +155,11 @@ const handleInteractionEnd = (e) => {
 
     if (isUserTouching) {
         isUserTouching = false;
+
+        const rect = container.getBoundingClientRect();
+        autoLight.x = Math.max(60, Math.min(rect.width - 60, autoLight.x));
+        autoLight.y = Math.max(160, Math.min(rect.height - 60, autoLight.y));
+
         autoLight.dx = (Math.random() < 0.5 ? -1 : 1) * (3 + Math.random() * 3);
         autoLight.dy = (Math.random() < 0.5 ? -1 : 1) * (3 + Math.random() * 3);
     }
@@ -203,7 +209,8 @@ function moveCharacters() {
             else if (char.y < -char.height) char.y = maxY;
         }
 
-        char.el.style.transform = `translate(${char.x}px, ${char.y}px)`;
+        char.el.style.left = `${char.x}px`;
+        char.el.style.top = `${char.y}px`;
     });
 }
 
@@ -280,15 +287,12 @@ function startLevel() {
     if (level >= DARK_MODE_LEVEL) {
         shadowOverlay.classList.add('active');
         shadowOverlay.classList.remove('hidden');
-         
         const lightProgress = Math.min((level - DARK_MODE_LEVEL) / (LIGHT_MIN_LEVEL - DARK_MODE_LEVEL), 1);
         const currentRadius = MAX_LIGHT_RADIUS - ((MAX_LIGHT_RADIUS - MIN_LIGHT_RADIUS) * lightProgress);
         shadowOverlay.style.setProperty('--radius', `${currentRadius}px`);
-        
         const shadowProgress = Math.min((level - DARK_MODE_LEVEL) / (SHADOW_MAX_LEVEL - DARK_MODE_LEVEL), 1);
         const currentOpacity = MIN_SHADOW_OPACITY + ((MAX_SHADOW_OPACITY - MIN_SHADOW_OPACITY) * shadowProgress);
         shadowOverlay.style.setProperty('--opacity', currentOpacity);
-        
     } else {
         shadowOverlay.classList.remove('active');
         shadowOverlay.style.setProperty('--opacity', 0);
@@ -304,18 +308,15 @@ function startLevel() {
     let levelBehavior = 'bounce';
     let sharedDirX = 0;
     let sharedDirY = 0;
-    const isUniformMovement = Math.random() < 0.8;
+    let isUniformMovement = Math.random() < 0.8;
+    let currentSpeed = 0;
 
     if (level >= CHAOS_MODE_LEVEL) {
         levelBehavior = Math.random() < 0.5 ? 'bounce' : 'wrap';
-
         const speedProgress = Math.min((level - CHAOS_MODE_LEVEL) / (CHAOS_MAX_SPEED_LEVEL - CHAOS_MODE_LEVEL), 1);
-        const currentSpeed = MIN_SPEED + ((MAX_SPEED - MIN_SPEED) * speedProgress);
-
-        if (isUniformMovement) {
-            sharedDirX = (Math.random() < 0.5 ? -1 : 1) * currentSpeed;
-            sharedDirY = (Math.random() < 0.5 ? -1 : 1) * currentSpeed;
-        }
+        currentSpeed = MIN_SPEED + ((MAX_SPEED - MIN_SPEED) * speedProgress);
+        sharedDirX = (Math.random() < 0.5 ? -1 : 1) * currentSpeed;
+        sharedDirY = (Math.random() < 0.5 ? -1 : 1) * currentSpeed;
     }
 
     for (let i = 0; i < totalCharacters; i++) {
@@ -343,17 +344,30 @@ function startLevel() {
             const startX = Math.random() * (boardRect.width - 60);
             const startY = Math.random() * (boardRect.height - 60);
             
-            const speedProgress = Math.min((level - CHAOS_MODE_LEVEL) / (CHAOS_MAX_SPEED_LEVEL - CHAOS_MODE_LEVEL), 1);
-            const currentSpeed = MIN_SPEED + ((MAX_SPEED - MIN_SPEED) * speedProgress);
+            let dirX = 0;
+            let dirY = 0;
 
-            let dirX, dirY;
-
-            if (isUniformMovement) {
-                dirX = sharedDirX;
-                dirY = sharedDirY;
-            } else {
-                dirX = (Math.random() < 0.5 ? -1 : 1) * currentSpeed;
-                dirY = (Math.random() < 0.5 ? -1 : 1) * currentSpeed;
+            if (level >= ADVANCED_CHAOS_LEVEL) {
+                const isStatic = Math.random() < 0.3;
+                if (!isStatic) {
+                    const isSync = Math.random() < 0.6;
+                    if (isSync) {
+                        dirX = sharedDirX;
+                        dirY = sharedDirY;
+                    } else {
+                        dirX = (Math.random() < 0.5 ? -1 : 1) * currentSpeed;
+                        dirY = (Math.random() < 0.5 ? -1 : 1) * currentSpeed;
+                    }
+                }
+            } 
+            else {
+                if (isUniformMovement) {
+                    dirX = sharedDirX;
+                    dirY = sharedDirY;
+                } else {
+                    dirX = (Math.random() < 0.5 ? -1 : 1) * currentSpeed;
+                    dirY = (Math.random() < 0.5 ? -1 : 1) * currentSpeed;
+                }
             }
 
             movingCharacters.push({
@@ -367,9 +381,9 @@ function startLevel() {
                 behavior: levelBehavior
             });
 
-            img.style.left = '0px';
-            img.style.top = '0px';
-            img.style.transform = `translate(${startX}px, ${startY}px)`;
+            img.style.left = `${startX}px`;
+            img.style.top = `${startY}px`;
+            img.style.transform = '';
         }
 
         img.addEventListener('pointerdown', handleCharacterClick);
