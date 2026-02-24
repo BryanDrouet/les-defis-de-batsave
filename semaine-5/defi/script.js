@@ -7,11 +7,11 @@ const CHAOS_MODE_LEVEL = 20;
 const ADVANCED_CHAOS_LEVEL = 30;
 
 const MIN_SPEED = 0.8;
-const MAX_SPEED = 5;
+const MAX_SPEED = 3.5;
 const CHAOS_MAX_SPEED_LEVEL = 50;
 
 const MIN_CHAOS_CHARS = 20;
-const MAX_CHAOS_CHARS = 60;
+const MAX_CHAOS_CHARS = 40;
 const CHAOS_MAX_CHARS_LEVEL = 50;
 
 const MAX_LIGHT_RADIUS = 500; 
@@ -292,7 +292,7 @@ function startLevel() {
         if (level >= ADVANCED_CHAOS_LEVEL) {
             isSynced = Math.random() < 0.5;
             isStatic = false;
-            multiplier = 1 + Math.random() * 3;
+            multiplier = 1 + Math.random() * 2;
         } 
         else {
             const chaosRoll = Math.random();
