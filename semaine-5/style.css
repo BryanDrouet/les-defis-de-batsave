@@ -229,14 +229,26 @@ h2 i, h3 i, h4 i, strong i {
     .mechanics {
         grid-template-columns: 1fr;
     }
+
     .poster-container {
         flex-direction: column;
         gap: 30px;
     }
+
     .progress-header strong svg {
         display: none;
     }
+
     .wanted-poster {
         height: 160px;
+    }
+
+    .progress-footer {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .progress-status {
+        text-align: left;
     }
 }
