@@ -209,8 +209,7 @@ function moveCharacters() {
             else if (char.y < -char.height) char.y = maxY;
         }
 
-        char.el.style.left = `${char.x}px`;
-        char.el.style.top = `${char.y}px`;
+        char.el.style.transform = `translate3d(${char.x}px, ${char.y}px, 0)`;
     });
 }
 
@@ -398,9 +397,9 @@ function startLevel() {
                 behavior: levelBehavior
             });
 
-            img.style.left = `${startX}px`;
-            img.style.top = `${startY}px`;
-            img.style.transform = ''; 
+            img.style.left = '0px';
+            img.style.top = '0px';
+            img.style.transform = `translate3d(${startX}px, ${startY}px, 0)`;
         }
 
         img.addEventListener('pointerdown', handleCharacterClick);
