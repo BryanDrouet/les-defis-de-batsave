@@ -8,6 +8,7 @@
     user-select: none;
     -webkit-user-select: none; 
     touch-action: none; 
+    word-break: break-word;
 }
 
 img, .game-container {
@@ -47,7 +48,6 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 15px;
     background: rgba(0, 0, 0, 0.33);
     flex-shrink: 0; 
     height: 15%; 
@@ -55,6 +55,7 @@ body {
     position: relative;
     z-index: 20; 
     gap: 15px;
+    border-bottom: 3px solid #00000038;
 }
 
 .ui-bar.hidden {
@@ -69,6 +70,16 @@ body {
     flex-direction: column;
     justify-content: center;
     height: 100%;
+    padding: 15px;
+}
+
+.score-box *, .timer-box * {
+    filter: drop-shadow(3px 3px 0px #00000038);
+}
+
+.wanted-frame * {
+    border-left: 3px solid #00000038;
+    border-right: 3px solid #00000038;
 }
 
 #score, #timer {
@@ -101,9 +112,7 @@ body {
     height: 100%; 
     width: auto;
     z-index: 2;
-    transform: rotate(-3deg); 
     image-rendering: pixelated;
-    box-shadow: 3px 3px 18px 0px #000000;
 }
 
 .board {
@@ -128,6 +137,7 @@ body {
     cursor: pointer;
     image-rendering: pixelated;
     animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    filter: drop-shadow(3px 3px 0px #00000038);
 }
 
 .character:active {
