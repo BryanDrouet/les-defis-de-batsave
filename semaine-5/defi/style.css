@@ -226,7 +226,7 @@ body {
     color: #f1c40f;
     margin: 0;
     text-shadow: 4px 4px 0 #b30000;
-    margin-bottom: 50px;
+    margin-bottom: 25px;
     letter-spacing: 11px;
 }
 
@@ -546,6 +546,22 @@ tr:hover {
     font-style: italic;
     font-size: 1.2rem;
     margin-top: 10px;
+}
+
+.sound-controls {
+    z-index: 30;
+    margin: 20px;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.volume-slider-container input {
+    width: 100%;
 }
 
 @keyframes popIn {
