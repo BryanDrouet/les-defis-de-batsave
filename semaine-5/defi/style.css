@@ -130,13 +130,13 @@ body {
     position: absolute;
     height: 110%; 
     width: auto;
-    z-index: 1;
+    z-index: 0;
 }
 
 .target-face {
     height: 100%; 
     width: auto;
-    z-index: 2;
+    z-index: 1;
     image-rendering: pixelated;
 }
 
@@ -172,7 +172,7 @@ body {
 }
 
 .character.target {
-    z-index: 10;
+    z-index: 9 !important;
 }
 
 #shadow-overlay {
