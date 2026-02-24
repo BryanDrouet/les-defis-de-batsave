@@ -313,5 +313,5 @@ button:hover {
 @media (max-width: 480px) {
     .message-box p { font-size: 2rem; }
     .message-box h1 { font-size: 3rem; }
-    .message-box .warning { font-size: 1.5rem; }
+    .message-box .warning { font-size: 1.5rem !important; }
 }
