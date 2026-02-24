@@ -19,7 +19,7 @@ const LIGHT_MIN_LEVEL = 20;
 
 const MIN_SHADOW_OPACITY = 0;
 const MAX_SHADOW_OPACITY = 0.88;
-const SHADOW_MAX_LEVEL = 20;
+const SHADOW_MAX_LEVEL = 30;
 
 const audio = {
     caught: [
@@ -44,11 +44,18 @@ let isPlaying = false;
 let animationFrameId = null;
 let movingCharacters = []; 
 
+let isUserTouching = false;
+let autoLight = {
+    x: window.innerWidth / 2,
+    y: window.innerHeight / 2,
+    dx: 4,
+    dy: 4
+};
+
 const board = document.getElementById('game-board');
 const scoreEl = document.getElementById('score');
 const timerEl = document.getElementById('timer');
 const targetImg = document.getElementById('target-img');
-const bestScoreDisplay = document.getElementById('best-score-display');
 const shadowOverlay = document.getElementById('shadow-overlay');
 const overlayScreen = document.getElementById('overlay-screen');
 const overlayTitle = document.getElementById('overlay-title');
@@ -56,8 +63,10 @@ const warningText = document.getElementById('warning-text');
 const startBtn = document.getElementById('start-btn');
 const resetBtn = document.getElementById('reset-btn');
 const uiBar = document.querySelector('.ui-bar');
+const bestScoreDisplay = document.getElementById('best-score-display');
+const container = document.querySelector('.game-container');
 
-warningText.textContent = `Attention : À partir du niveau ${DARK_MODE_LEVEL}, les ténèbres arrivent...`;
+warningText.textContent = `Attention : À partir du niveau ${CHAOS_MODE_LEVEL} le chaos arrive...`;
 timerEl.textContent = START_TIME;
 
 const saveGame = () => {
@@ -85,7 +94,7 @@ const updateBestScore = () => {
     }
 };
 
-function updateFlashlight(x, y) {
+function setFlashlightPosition(x, y) {
     if (level >= DARK_MODE_LEVEL && isPlaying) {
         const uiHeight = uiBar.offsetHeight;
         shadowOverlay.style.setProperty('--x', `${x}px`);
@@ -93,22 +102,76 @@ function updateFlashlight(x, y) {
     }
 }
 
-document.addEventListener('mousemove', (e) => {
-    const rect = document.querySelector('.game-container').getBoundingClientRect();
-    updateFlashlight(e.clientX - rect.left, e.clientY - rect.top);
+function updateAutoLight() {
+    const rect = container.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+
+    autoLight.x += autoLight.dx;
+    autoLight.y += autoLight.dy;
+
+    if (autoLight.x <= 50 || autoLight.x >= width - 50) {
+        autoLight.dx *= -1;
+        autoLight.dy += (Math.random() - 0.5); 
+    }
+    if (autoLight.y <= 150 || autoLight.y >= height - 50) {
+        autoLight.dy *= -1;
+        autoLight.dx += (Math.random() - 0.5);
+    }
+
+    autoLight.x = Math.max(0, Math.min(autoLight.x, width));
+    autoLight.y = Math.max(0, Math.min(autoLight.y, height));
+
+    setFlashlightPosition(autoLight.x, autoLight.y);
+}
+
+document.addEventListener('pointerdown', (e) => {
+    isUserTouching = true;
+    updateLightPosition(e);
 });
 
-document.addEventListener('touchmove', (e) => {
-    const rect = document.querySelector('.game-container').getBoundingClientRect();
-    const touch = e.touches[0];
-    updateFlashlight(touch.clientX - rect.left, touch.clientY - rect.top);
-}, { passive: true });
+document.addEventListener('pointermove', (e) => {
+    if (e.pointerType === 'mouse') {
+        isUserTouching = true;
+        updateLightPosition(e);
+    } 
+    else if (isUserTouching) { 
+        updateLightPosition(e);
+    }
+});
+
+function updateLightPosition(e) {
+    const rect = container.getBoundingClientRect();
+    autoLight.x = e.clientX - rect.left;
+    autoLight.y = e.clientY - rect.top;
+    setFlashlightPosition(autoLight.x, autoLight.y);
+}
+
+const handleInteractionEnd = (e) => {
+    if (e.pointerType === 'mouse' && e.type !== 'pointerleave') {
+        return;
+    }
+
+    if (isUserTouching) {
+        isUserTouching = false;
+        autoLight.dx = (Math.random() < 0.5 ? -1 : 1) * (3 + Math.random() * 3);
+        autoLight.dy = (Math.random() < 0.5 ? -1 : 1) * (3 + Math.random() * 3);
+    }
+};
+
+document.addEventListener('pointerup', handleInteractionEnd);
+document.addEventListener('pointercancel', handleInteractionEnd);
+document.addEventListener('pointerleave', handleInteractionEnd);
 
 function gameLoop() {
     if (!isPlaying) return;
 
     if (level >= CHAOS_MODE_LEVEL) {
         moveCharacters();
+    }
+
+    if (level >= DARK_MODE_LEVEL && !isUserTouching) {
+        updateAutoLight();
     }
 
     animationFrameId = requestAnimationFrame(gameLoop);
@@ -160,6 +223,13 @@ function startGame(isResume = false) {
     timerEl.textContent = timeLeft;
     overlayScreen.classList.add('hidden');
     warningText.classList.add('hidden');
+    
+    isUserTouching = false; 
+    
+    autoLight.x = window.innerWidth / 2;
+    autoLight.y = window.innerHeight / 2;
+    autoLight.dx = (Math.random() < 0.5 ? -1 : 1) * 4;
+    autoLight.dy = (Math.random() < 0.5 ? -1 : 1) * 4;
     
     audio.music.currentTime = 0;
     audio.music.play().catch(() => {});
@@ -309,7 +379,7 @@ function startLevel() {
 
 function handleCharacterClick(e) {
     if (!isPlaying) return;
-    
+        
     if (e.target.dataset.type === 'target') {
         audio.caught[Math.floor(Math.random() * audio.caught.length)].play();
         score++;
