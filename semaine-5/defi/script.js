@@ -146,10 +146,13 @@ function startLevel() {
         let newRadius = Math.max(MAX_LIGHT_RADIUS - (darkLevelsPassed * LIGHT_SHRINK_STEP), MIN_LIGHT_RADIUS);
         shadowOverlay.style.setProperty('--radius', `${newRadius}px`);
         
-        let newOpacity = Math.min(0.5 + (darkLevelsPassed * 0.1), 0.98);
+        let newOpacity = Math.min(0.85 + (darkLevelsPassed * 0.05), 0.98); 
+        
         shadowOverlay.style.setProperty('--opacity', newOpacity);
+        
     } else {
         shadowOverlay.classList.remove('active');
+        shadowOverlay.style.setProperty('--opacity', 0);
     }
 
     currentTarget = CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)];
