@@ -33,7 +33,13 @@ const audio = {
     music: new Audio('assets/audio/music.wav')
 };
 audio.music.loop = true;
-audio.music.volume = 0.3;
+
+let settings = {
+    musicVolume: 0.3,
+    sfxVolume: 1.0,
+    gameMode: 'normal'
+};
+audio.music.volume = settings.musicVolume;
 
 let score = 0;
 let level = 1;
@@ -41,6 +47,7 @@ let timeLeft = START_TIME;
 let timerInterval = null;
 let currentTarget = '';
 let isPlaying = false;
+let isPaused = false;
 
 let allRecords = [];
 let sortState = { column: 'score', direction: 'desc' };
@@ -56,12 +63,6 @@ let autoLight = {
     dy: 4
 };
 
-let isMuted = false;
-const VOLUMES = {
-    music: 0.3,
-    sfx: 1.0
-};
-
 const board = document.getElementById('game-board');
 const scoreEl = document.getElementById('score');
 const timerEl = document.getElementById('timer');
@@ -69,48 +70,100 @@ const targetImg = document.getElementById('target-img');
 const shadowOverlay = document.getElementById('shadow-overlay');
 const overlayScreen = document.getElementById('overlay-screen');
 const overlayTitle = document.getElementById('overlay-title');
+const overlayDesc = document.getElementById('overlay-desc');
 const warningText = document.getElementById('warning-text');
 const startBtn = document.getElementById('start-btn');
 const resetBtn = document.getElementById('reset-btn');
 const uiBar = document.querySelector('.ui-bar');
 const bestScoreDisplay = document.getElementById('best-score-display');
 const container = document.querySelector('.game-container');
-const soundBtn = document.getElementById('mute-btn');
+const buttonGroup = document.querySelector('.button-group');
+
+const settingsModal = document.getElementById('settings-modal');
+const settingsBtn = document.getElementById('settings-btn');
+const closeSettingsBtn = document.getElementById('close-settings');
+const musicSlider = document.getElementById('music-slider');
+const sfxSlider = document.getElementById('sfx-slider');
+const diffBtns = document.querySelectorAll('.diff-btn');
+const diffDesc = document.getElementById('diff-desc');
 
 warningText.textContent = `Attention : à partir du niveau ${CHAOS_MODE_LEVEL} le chaos arrive...`;
 timerEl.textContent = START_TIME;
 
-function toggleSound() {
-    isMuted = !isMuted;
-    const btn = document.getElementById('sound-btn');
-    const icon = btn.querySelector('i');
-
-    if (isMuted) {
-        audio.music.volume = 0;
-        audio.wrong.volume = 0;
-        audio.timeup.volume = 0;
-        audio.caught.forEach(s => s.volume = 0);
-        
-        if (icon) icon.setAttribute('data-lucide', 'volume-x');
-        btn.style.borderColor = '#7f8c8d';
-        btn.style.color = '#7f8c8d';
+function togglePause(pauseState) {
+    if (!isPlaying) return;
+    
+    isPaused = pauseState;
+    
+    if (isPaused) {
+        audio.music.pause();
     } else {
-        audio.music.volume = VOLUMES.music;
-        audio.wrong.volume = VOLUMES.sfx;
-        audio.timeup.volume = VOLUMES.sfx;
-        audio.caught.forEach(s => s.volume = VOLUMES.sfx);
-        
-        if (icon) icon.setAttribute('data-lucide', 'volume-2');
-        btn.style.borderColor = '#b30000';
-        btn.style.color = '#f1c40f';
+        if (settings.musicVolume > 0) audio.music.play().catch(() => {});
     }
+}
 
-    if (window.lucide) lucide.createIcons();
+function openSettings() {
+    togglePause(true);
+    settingsModal.classList.remove('hidden'); 
+    requestAnimationFrame(() => {
+        settingsModal.classList.add('visible');
+    });
+}
+
+function closeSettings() {
+    settingsModal.classList.remove('visible');
+    setTimeout(() => {
+        if (!settingsModal.classList.contains('visible')) {
+           settingsModal.classList.add('hidden');
+        }
+    }, 300);
+    togglePause(false);
+}
+
+settingsBtn.addEventListener('click', openSettings);
+closeSettingsBtn.addEventListener('click', closeSettings);
+
+settingsModal.addEventListener('click', (e) => {
+    if (e.target === settingsModal) {
+        closeSettings();
+    }
+});
+
+musicSlider.addEventListener('input', (e) => {
+    settings.musicVolume = parseFloat(e.target.value);
+    audio.music.volume = settings.musicVolume;
+    document.getElementById('music-val').textContent = Math.round(settings.musicVolume * 100) + '%';
+});
+
+sfxSlider.addEventListener('input', (e) => {
+    settings.sfxVolume = parseFloat(e.target.value);
+    document.getElementById('sfx-val').textContent = Math.round(settings.sfxVolume * 100) + '%';
+});
+
+const modeInfos = {
+    simple: "Mode Simple : 50% de personnages en moins. Idéal pour débuter.",
+    normal: "Mode Normal : L'expérience originale.",
+    hard: "Mode Difficile : 50% de personnages en plus. Bonne chance."
+};
+
+diffBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        updateDifficultyUI(btn.dataset.mode);
+    });
+});
+
+function updateDifficultyUI(mode) {
+    settings.gameMode = mode;
+    diffBtns.forEach(b => {
+        if (b.dataset.mode === mode) b.classList.add('active');
+        else b.classList.remove('active');
+    });
+    if(diffDesc) diffDesc.textContent = modeInfos[mode];
 }
 
 const saveGame = () => {
     if(!isPlaying) return;
-    localStorage.setItem('wanted_current_session', JSON.stringify({ score, level, timeLeft }));
+    localStorage.setItem('wanted_current_session', JSON.stringify({ score, level, timeLeft, gameMode: settings.gameMode }));
 };
 
 const loadSession = () => {
@@ -120,6 +173,10 @@ const loadSession = () => {
         score = data.score;
         level = data.level;
         timeLeft = data.timeLeft;
+        if(data.gameMode) {
+            settings.gameMode = data.gameMode;
+            updateDifficultyUI(data.gameMode);
+        }
         return true;
     }
     return false;
@@ -134,7 +191,7 @@ const updateBestScore = () => {
 };
 
 function setFlashlightPosition(x, y) {
-    if (level >= DARK_MODE_LEVEL && isPlaying) {
+    if (level >= DARK_MODE_LEVEL && isPlaying && !isPaused) {
         const uiHeight = uiBar.offsetHeight;
         shadowOverlay.style.setProperty('--x', `${x}px`);
         shadowOverlay.style.setProperty('--y', `${y - uiHeight}px`);
@@ -142,6 +199,8 @@ function setFlashlightPosition(x, y) {
 }
 
 function updateAutoLight() {
+    if(isPaused) return;
+
     const rect = container.getBoundingClientRect();
     const width = rect.width;
     const height = rect.height;
@@ -166,10 +225,11 @@ function updateAutoLight() {
 
 document.addEventListener('pointerdown', (e) => {
     isUserTouching = true;
-    updateLightPosition(e);
+    if(!isPaused) updateLightPosition(e);
 });
 
 document.addEventListener('pointermove', (e) => {
+    if(isPaused) return;
     if (e.pointerType === 'mouse') {
         isUserTouching = true;
         updateLightPosition(e);
@@ -208,11 +268,8 @@ async function loadLeaderboard() {
     try {
         const response = await fetch('records.json'); 
         if (!response.ok) throw new Error("Fichier introuvable");
-        
         allRecords = await response.json();
-        
         sortRecords();
-        
         loadingMsg.style.display = 'none';
     } catch (error) {
         console.error("Erreur leaderboard:", error);
@@ -237,8 +294,8 @@ function sortRecords() {
             valB = Number(valB);
         }
         else {
-            valA = valA.toString().toLowerCase();
-            valB = valB.toString().toLowerCase();
+            valA = valA ? valA.toString().toLowerCase() : '';
+            valB = valB ? valB.toString().toLowerCase() : '';
         }
 
         if (valA < valB) return -1 * modifier;
@@ -248,7 +305,6 @@ function sortRecords() {
 
     const searchTerm = document.getElementById('lb-search').value.toLowerCase();
     const filtered = allRecords.filter(r => r.pseudo.toLowerCase().includes(searchTerm));
-    
     renderTable(filtered);
     updateSortIcons();
 }
@@ -262,14 +318,18 @@ function renderTable(data) {
         
         let pseudoHtml = record.pseudo;
         if (record.proof && record.proof.trim() !== "") {
-            pseudoHtml += ` <a href="${record.proof}" target="_blank" title="Voir la preuve" class="proof-link">
-                <i data-lucide="external-link" style="width:14px;height:14px;"></i>
-            </a>`;
+            pseudoHtml += ` <a href="${record.proof}" target="_blank" class="proof-link"><i data-lucide="external-link" style="width:14px;height:14px;"></i></a>`;
         }
+
+        let modeClass = 'mode-normal';
+        let modeLabel = 'Normal';
+        if(record.mode === 'simple') { modeClass = 'mode-simple'; modeLabel = 'Simple'; }
+        if(record.mode === 'hard') { modeClass = 'mode-hard'; modeLabel = 'Difficile'; }
 
         tr.innerHTML = `
             <td>${pseudoHtml}</td>
             <td>${record.score}</td>
+            <td><span class="mode-badge ${modeClass}">${modeLabel}</span></td>
             <td>${record.date}</td>
         `;
         tbody.appendChild(tr);
@@ -279,6 +339,7 @@ function renderTable(data) {
 }
 
 function parseDate(dateStr) {
+    if(!dateStr) return 0;
     const parts = dateStr.split('/');
     return new Date(parts[2], parts[1] - 1, parts[0]).getTime();
 }
@@ -313,11 +374,9 @@ const handleInteractionEnd = (e) => {
 
     if (isUserTouching) {
         isUserTouching = false;
-
         const rect = container.getBoundingClientRect();
         autoLight.x = Math.max(60, Math.min(rect.width - 60, autoLight.x));
         autoLight.y = Math.max(160, Math.min(rect.height - 60, autoLight.y));
-
         autoLight.dx = (Math.random() < 0.5 ? -1 : 1) * (3 + Math.random() * 3);
         autoLight.dy = (Math.random() < 0.5 ? -1 : 1) * (3 + Math.random() * 3);
     }
@@ -330,12 +389,14 @@ document.addEventListener('pointerleave', handleInteractionEnd);
 function gameLoop() {
     if (!isPlaying) return;
 
-    if (level >= CHAOS_MODE_LEVEL) {
-        moveCharacters();
-    }
+    if (!isPaused) {
+        if (level >= CHAOS_MODE_LEVEL) {
+            moveCharacters();
+        }
 
-    if (level >= DARK_MODE_LEVEL && !isUserTouching) {
-        updateAutoLight();
+        if (level >= DARK_MODE_LEVEL && !isUserTouching) {
+            updateAutoLight();
+        }
     }
 
     animationFrameId = requestAnimationFrame(gameLoop);
@@ -384,11 +445,16 @@ function startGame(isResume = false) {
     bestScoreDisplay.classList.add('hidden');
     
     isPlaying = true;
+    isPaused = false;
+
     uiBar.classList.remove('hidden');
     scoreEl.textContent = score;
     timerEl.textContent = timeLeft;
+    
     overlayScreen.classList.add('hidden');
     warningText.classList.add('hidden');
+    
+    settingsBtn.style.display = 'none';
     
     isUserTouching = false; 
     
@@ -398,13 +464,17 @@ function startGame(isResume = false) {
     autoLight.dy = (Math.random() < 0.5 ? -1 : 1) * 4;
     
     audio.music.currentTime = 0;
-    audio.music.play().catch(() => {});
+    if(settings.musicVolume > 0) {
+        audio.music.play().catch(() => {});
+    }
 
     startLevel();
     gameLoop();
     
     if (timerInterval) clearInterval(timerInterval);
     timerInterval = setInterval(() => {
+        if (isPaused) return;
+
         timeLeft--;
         timerEl.textContent = timeLeft;
         timerEl.style.color = timeLeft <= 5 ? '#ff5454' : '#00d512';
@@ -431,6 +501,12 @@ function startLevel() {
         if (level >= 6) totalCharacters = 16;
         if (level >= 10) totalCharacters = 25;
         if (level >= 15) totalCharacters = 36;
+    }
+
+    if (settings.gameMode === 'simple') {
+        totalCharacters = Math.max(4, Math.floor(totalCharacters / 2));
+    } else if (settings.gameMode === 'hard') {
+        totalCharacters = Math.floor(totalCharacters * 1.5);
     }
 
     let levelBehavior = 'bounce';
@@ -505,6 +581,9 @@ function startLevel() {
     const targetIndex = Math.floor(Math.random() * totalCharacters);
     const boardRect = board.getBoundingClientRect(); 
 
+    const bWidth = boardRect.width || window.innerWidth;
+    const bHeight = boardRect.height || window.innerHeight;
+
     for (let i = 0; i < totalCharacters; i++) {
         const img = document.createElement('img');
         img.classList.add('character');
@@ -523,12 +602,13 @@ function startLevel() {
         }
 
         if (level >= CHAOS_MODE_LEVEL) {
+            img.style.opacity = '0';
             img.style.position = 'absolute';
             img.style.width = '60px';
             img.style.height = '60px';
             
-            const startX = Math.random() * (boardRect.width - 60);
-            const startY = Math.random() * (boardRect.height - 60);
+            const startX = Math.random() * (bWidth - 60);
+            const startY = Math.random() * (bHeight - 60);
             
             let dirX = 0;
             let dirY = 0;
@@ -557,6 +637,14 @@ function startLevel() {
             img.style.left = '0px';
             img.style.top = '0px';
             img.style.transform = `translate3d(${startX}px, ${startY}px, 0)`; 
+            
+            requestAnimationFrame(() => {
+                img.style.transition = 'opacity 0.2s ease-out';
+                img.style.opacity = '1';
+            });
+
+        } else {
+            img.style.animation = 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
         }
 
         img.addEventListener('pointerdown', handleCharacterClick);
@@ -565,10 +653,13 @@ function startLevel() {
 }
 
 function handleCharacterClick(e) {
-    if (!isPlaying) return;
+    if (!isPlaying || isPaused) return;
         
     if (e.target.dataset.type === 'target') {
-        audio.caught[Math.floor(Math.random() * audio.caught.length)].play();
+        const sound = audio.caught[Math.floor(Math.random() * audio.caught.length)];
+        sound.volume = settings.sfxVolume;
+        sound.play().catch(()=>{});
+        
         score++;
         scoreEl.textContent = score;
         
@@ -581,7 +672,8 @@ function handleCharacterClick(e) {
         saveGame();
         startLevel();
     } else {
-        audio.wrong.play();
+        audio.wrong.volume = settings.sfxVolume;
+        audio.wrong.play().catch(()=>{});
         
         timeLeft = Math.max(0, timeLeft - 3);
         
@@ -597,27 +689,83 @@ function handleCharacterClick(e) {
 
 function gameOver() {
     isPlaying = false;
+    isPaused = false;
     cancelAnimationFrame(animationFrameId); 
     clearInterval(timerInterval);
     updateBestScore();
     localStorage.removeItem('wanted_current_session');
     
     audio.music.pause();
-    audio.timeup.play();
+    
+    audio.timeup.volume = settings.sfxVolume;
+    audio.timeup.play().catch(()=>{});
+    
     uiBar.classList.add('hidden');
     
     overlayTitle.textContent = "GAME OVER";
     const best = localStorage.getItem('wanted_best_score') || 0;
-    document.getElementById('overlay-desc').innerHTML = `Score : ${score}`;
+    overlayDesc.innerHTML = `Score : ${score}`;
     
     if (best > 0) bestScoreDisplay.classList.remove('hidden');
 
     warningText.classList.add('hidden');
-    startBtn.textContent = "REJOUER";
-    resetBtn.classList.add('hidden'); 
+    
+    initStartScreen();
+    
+    settingsBtn.style.display = 'flex';
     
     overlayScreen.classList.remove('hidden');
     shadowOverlay.classList.remove('active');
+}
+
+function initStartScreen() {
+    const existingDiffContainer = document.querySelector('.difficulty-start-container');
+    if(existingDiffContainer) existingDiffContainer.remove();
+
+    const hasSession = localStorage.getItem('wanted_current_session') !== null;
+    
+    if (hasSession) {
+        startBtn.classList.remove('hidden');
+        startBtn.textContent = "CONTINUER";
+        resetBtn.classList.remove('hidden');
+        overlayTitle.textContent = "SESSION REPRISE";
+    } else {
+        startBtn.classList.add('hidden');
+        resetBtn.classList.add('hidden');
+        overlayTitle.textContent = "WANTED!";
+
+        const diffContainer = document.createElement('div');
+        diffContainer.className = 'difficulty-start-container';
+        diffContainer.style.display = 'flex';
+        diffContainer.style.flexDirection = 'column';
+        diffContainer.style.gap = '15px';
+        diffContainer.style.marginTop = '20px';
+
+        const label = document.createElement('p');
+        label.textContent = "CHOISIS TA DIFFICULTÉ :";
+        label.style.fontSize = '1.5rem';
+        label.style.marginBottom = '5px';
+        diffContainer.appendChild(label);
+
+        const modes = [
+            { id: 'simple', label: 'SIMPLE', class: 'mode-simple' },
+            { id: 'normal', label: 'NORMAL', class: 'mode-normal' },
+            { id: 'hard', label: 'DIFFICILE', class: 'mode-hard' }
+        ];
+
+        modes.forEach(m => {
+            const btn = document.createElement('button');
+            btn.textContent = m.label;
+            btn.style.width = '200px'; 
+            btn.onclick = () => {
+                updateDifficultyUI(m.id);
+                startGame(false);
+            };
+            diffContainer.appendChild(btn);
+        });
+
+        buttonGroup.insertBefore(diffContainer, startBtn);
+    }
 }
 
 window.onload = () => {
@@ -631,22 +779,15 @@ window.onload = () => {
     }
 
     const hasSession = loadSession();
-
     if (hasSession) {
-        overlayTitle.textContent = "SESSION REPRISE";
         document.getElementById('overlay-desc').textContent = `Niveau ${level} - Score ${score}`;
         warningText.classList.add('hidden');
-        startBtn.textContent = "CONTINUER";
-        resetBtn.classList.remove('hidden');
     } else {
-        overlayTitle.textContent = "WANTED!";
         warningText.classList.remove('hidden');
-        startBtn.textContent = "COMMENCER";
-        resetBtn.classList.add('hidden');
     }
-};
 
-soundBtn.addEventListener('click', toggleSound);
+    initStartScreen();
+};
 
 startBtn.addEventListener('click', () => {
     const hasSession = localStorage.getItem('wanted_current_session') !== null;
@@ -655,6 +796,7 @@ startBtn.addEventListener('click', () => {
 
 resetBtn.addEventListener('click', () => {
     if(confirm("Voulez-vous vraiment recommencer à zéro ?")) {
-        startGame(false);
+        localStorage.removeItem('wanted_current_session');
+        initStartScreen();
     }
 });
