@@ -48,6 +48,7 @@ const board = document.getElementById('game-board');
 const scoreEl = document.getElementById('score');
 const timerEl = document.getElementById('timer');
 const targetImg = document.getElementById('target-img');
+const bestScoreDisplay = document.getElementById('best-score-display');
 const shadowOverlay = document.getElementById('shadow-overlay');
 const overlayScreen = document.getElementById('overlay-screen');
 const overlayTitle = document.getElementById('overlay-title');
@@ -57,6 +58,7 @@ const resetBtn = document.getElementById('reset-btn');
 const uiBar = document.querySelector('.ui-bar');
 
 warningText.textContent = `Attention : À partir du niveau ${DARK_MODE_LEVEL}, les ténèbres arrivent...`;
+timerEl.textContent = START_TIME;
 
 const saveGame = () => {
     if(!isPlaying) return;
@@ -79,6 +81,7 @@ const updateBestScore = () => {
     const best = localStorage.getItem('wanted_best_score') || 0;
     if (score > best) {
         localStorage.setItem('wanted_best_score', score);
+        bestScoreDisplay.textContent = `Record : ${score}`;
     }
 };
 
@@ -148,6 +151,8 @@ function startGame(isResume = false) {
         timeLeft = START_TIME;
         localStorage.removeItem('wanted_current_session');
     }
+
+    bestScoreDisplay.classList.add('hidden');
     
     isPlaying = true;
     uiBar.classList.remove('hidden');
@@ -334,8 +339,10 @@ function gameOver() {
     
     overlayTitle.textContent = "GAME OVER";
     const best = localStorage.getItem('wanted_best_score') || 0;
-    document.getElementById('overlay-desc').innerHTML = `Score : ${score}<br><small>Record : ${best}</small>`;
+    document.getElementById('overlay-desc').innerHTML = `Score : ${score}`;
     
+    if (best > 0) bestScoreDisplay.classList.remove('hidden');
+
     warningText.classList.add('hidden');
     startBtn.textContent = "REJOUER";
     resetBtn.classList.add('hidden'); 
@@ -345,8 +352,17 @@ function gameOver() {
 }
 
 window.onload = () => {
+    const best = localStorage.getItem('wanted_best_score') || 0;
+
+    if (best > 0) {
+        bestScoreDisplay.textContent = `Record : ${best}`;
+        bestScoreDisplay.classList.remove('hidden');
+    } else {
+        bestScoreDisplay.classList.add('hidden');
+    }
+
     const hasSession = loadSession();
-    
+
     if (hasSession) {
         overlayTitle.textContent = "SESSION REPRISE";
         document.getElementById('overlay-desc').textContent = `Niveau ${level} - Score ${score}`;

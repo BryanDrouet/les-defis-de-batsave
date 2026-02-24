@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Sixtyfour+Convergence:BLED,SCAN,XELA,YELA@0..100,-53..100,-100..100,-100..100&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Jersey+15&display=swap');
+
 @font-face {
     font-family: 'Screenlogger';
     src: url('assets/screenlogger-cool.ttf') format('truetype');
@@ -11,6 +14,15 @@
     word-break: break-word;
 }
 
+body, p, span, div, button {
+    font-family: "Jersey 15", sans-serif;
+    font-weight: 400;
+}
+
+h1, .ui-bar span:first-child {
+    font-family: 'Screenlogger', sans-serif;
+}
+
 img, .game-container {
     image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;
@@ -21,7 +33,6 @@ body {
     margin: 0;
     padding: 0;
     background-color: #2c3e50;
-    font-family: 'Screenlogger', sans-serif;
     width: 100vw;
     height: 100vh;
     overflow: hidden;
@@ -68,13 +79,21 @@ body {
     flex-direction: column;
     height: 100%;
     padding: 15px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: center;
-    gap: 15px;
+    gap: 10px;
 }
 
 .score-box *, .timer-box * {
     filter: drop-shadow(3px 3px 0px #00000038);
+}
+
+.timer-box {
+    margin-left: 0;
+}
+
+.score-box {
+    margin-right: 0;
 }
 
 .wanted-frame * {
@@ -83,9 +102,13 @@ body {
 }
 
 #score, #timer {
-    font-size: 3rem;
-    font-weight: bold;
-    line-height: 1;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-variation-settings:
+        "BLED" 0,
+        "SCAN" 0,
+        "XELA" 0,
+        "YELA" 0;
 }
 
 #timer {
@@ -145,11 +168,6 @@ body {
     transform: scale(0.9);
 }
 
-@keyframes popIn {
-    from { transform: scale(0); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-
 #shadow-overlay {
     position: absolute;
     top: 15%;
@@ -172,6 +190,7 @@ body {
 }
 
 .overlay {
+    flex-direction: column;
     position: absolute;
     top: 0;
     left: 0;
@@ -206,8 +225,7 @@ body {
 
 .message-box p {
     font-size: 3rem;
-    margin: 0;
-    line-height: 1.4;
+    margin-bottom: 20px;
 }
 
 .message-box .warning {
@@ -218,21 +236,20 @@ body {
 }
 
 button {
-    background: #f1c40f;
-    border: 4px solid #b30000;
+    background: #ffd632;
+    border: 2px solid #b30000;
     color: #b30000;
     font-family: 'Screenlogger', sans-serif;
     font-size: 1.5rem;
     padding: 10px 30px;
     cursor: pointer;
-    border-radius: 10px;
+    border-radius: 5px;
     margin-top: 20px;
-    transition: transform 0.1s;
+    transition: background 0.3s ease-in-out;
 }
 
 button:hover {
-    transform: scale(1.05);
-    background: white;
+    background: #ffff00;
 }
 
 .hide-cursor #game-board, 
@@ -259,7 +276,34 @@ button:hover {
     display: none;
 }
 
-@media (max-height: 600px) {
+.best-score-badge {
+    font-family: "Jersey 15", sans-serif;
+    top: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #f1c40f;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 2rem;
+    z-index: 30;
+    border: 2px solid #b30000;
+    pointer-events: none;
+    margin-bottom: 20px;
+    width: max-content;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.best-score-badge.hidden {
+    display: none;
+}
+
+@keyframes popIn {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+@media (max-width: 480px) {
     .message-box p { font-size: 2rem; }
-    .message-box h1 { font-size: 3rem; margin-bottom: 20px; }
+    .message-box h1 { font-size: 3rem; }
 }
