@@ -413,15 +413,26 @@ function handleCharacterClick(e) {
         audio.caught[Math.floor(Math.random() * audio.caught.length)].play();
         score++;
         scoreEl.textContent = score;
+        
         timeLeft = Math.min(timeLeft + TIME_BONUS, 30);
+        
+        timerEl.textContent = timeLeft;
+        timerEl.style.color = timeLeft <= 5 ? '#ff5454' : '#00d512';
+
         level++;
         saveGame();
         startLevel();
     } else {
         audio.wrong.play();
+        
         timeLeft = Math.max(0, timeLeft - 3);
+        
+        timerEl.textContent = timeLeft;
+        timerEl.style.color = timeLeft <= 5 ? '#ff5454' : '#00d512';
+
         timerEl.classList.add('shake');
         setTimeout(() => timerEl.classList.remove('shake'), 200);
+        
         if (timeLeft <= 0) gameOver();
     }
 }
