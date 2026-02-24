@@ -189,6 +189,8 @@ function moveCharacters() {
     const maxY = boardRect.height;
 
     movingCharacters.forEach(char => {
+        if (char.dx === 0 && char.dy === 0) return;
+
         char.x += char.dx;
         char.y += char.dy;
 
@@ -275,7 +277,6 @@ function startLevel() {
 
     let levelBehavior = 'bounce';
     let currentSpeed = 0;
-    
     let isStatic = false;
     let isSynced = false;
     let sharedDirX = 0;
@@ -291,12 +292,10 @@ function startLevel() {
         if (level >= ADVANCED_CHAOS_LEVEL) {
             isSynced = Math.random() < 0.5;
             isStatic = false;
-
             multiplier = 1 + Math.random() * 3;
         } 
         else {
             const chaosRoll = Math.random();
-
             if (chaosRoll < 0.33) {
                 isStatic = true;
                 multiplier = 1 + Math.random(); 
@@ -399,7 +398,7 @@ function startLevel() {
 
             img.style.left = '0px';
             img.style.top = '0px';
-            img.style.transform = `translate3d(${startX}px, ${startY}px, 0)`;
+            img.style.transform = `translate3d(${startX}px, ${startY}px, 0)`; 
         }
 
         img.addEventListener('pointerdown', handleCharacterClick);

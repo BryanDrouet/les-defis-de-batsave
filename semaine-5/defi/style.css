@@ -161,10 +161,9 @@ body {
     max-width: 60px; 
     max-height: 100%;
     object-fit: contain;
-    will-change: transform;
-    transform: translate3d(0, 0, 0);
     cursor: pointer;
     image-rendering: pixelated;
+    will-change: transform;
     animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
