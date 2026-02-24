@@ -31,6 +31,14 @@
 <body>
 
     <div class="game-container">
+        <div class="sound-controls">
+            <button id="mute-btn" class="icon-btn">
+                <i data-lucide="volume-2"></i>
+            </button>
+            <div class="volume-slider-container">
+                <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.3">
+            </div>
+        </div>
         <header class="ui-bar hidden">
             <div class="score-box">
                 <span>SCORE</span>
@@ -47,47 +55,47 @@
             </div>
         </header>
 
-        <main id="game-board" class="board">
-            </main>
+        <main id="game-board" class="board"></main>
 
         <div id="shadow-overlay" class="hidden"></div>
 
         <div id="overlay-screen" class="overlay">
+            <div id="best-score-display" class="best-score-badge hidden">Record : 0</div>
             <div class="message-box">
-                <h1 id="overlay-title">WANTED!</h1>
-                <div id="best-score-display" class="best-score-badge hidden">Record : 0</div>
-                <p id="overlay-desc">Trouve le personnage affiché avant la fin du temps.</p>
-                <p id="warning-text" class="warning">Chargement...</p> 
-                
-                <div class="button-group">
-                    <button id="start-btn">COMMENCER</button>
-                    <button id="reset-btn" class="hidden">RECOMMENCER</button>
-                </div>
-
-                <div class="leaderboard-section">
-                    <div class="lb-header">
-                        <h3><i data-lucide="trophy"></i> Tableau des scores</h3>
-                        <div class="search-container">
-                            <i data-lucide="search" class="search-icon"></i>
-                            <input type="text" id="lb-search" placeholder="Rechercher un joueur...">
-                        </div>
-                    </div>
+                <div class="content-wrapper">
+                    <h1 id="overlay-title">WANTED!</h1>
+                    <p id="overlay-desc">Trouve le personnage affiché avant la fin du temps.</p>
+                    <p id="warning-text" class="warning">Chargement...</p> 
                     
-                    <div class="table-wrapper">
-                        <table id="leaderboard-table">
-                            <thead>
-                                <tr>
-                                    <th data-sort="pseudo">Joueur <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
-                                    <th data-sort="score">Score <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
-                                    <th data-sort="date">Date <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
-                                </tr>
-                            </thead>
-                            <tbody id="lb-body">
-                                </tbody>
-                        </table>
+                    <div class="button-group">
+                        <button id="start-btn">COMMENCER</button>
+                        <button id="reset-btn" class="hidden">RECOMMENCER</button>
                     </div>
-                    <p id="lb-loading">Chargement des scores...</p>
                 </div>
+            </div>
+            <div class="leaderboard-section">
+                <div class="lb-header">
+                    <h3><i data-lucide="trophy"></i> Tableau des scores</h3>
+                    <div class="search-container">
+                        <i data-lucide="search" class="search-icon"></i>
+                        <input type="text" id="lb-search" placeholder="Rechercher un joueur...">
+                    </div>
+                </div>
+                        
+                <div class="table-wrapper">
+                    <table id="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th data-sort="pseudo">Joueur <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                                <th data-sort="score">Score <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                                <th data-sort="date">Date <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody id="lb-body">
+                            </tbody>
+                    </table>
+                </div>
+                <p id="lb-loading">Chargement des scores...</p>
             </div>
         </div>
     </div>

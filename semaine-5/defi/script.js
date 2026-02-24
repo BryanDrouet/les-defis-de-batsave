@@ -56,6 +56,12 @@ let autoLight = {
     dy: 4
 };
 
+let isMuted = false;
+const VOLUMES = {
+    music: 0.3,
+    sfx: 1.0
+};
+
 const board = document.getElementById('game-board');
 const scoreEl = document.getElementById('score');
 const timerEl = document.getElementById('timer');
@@ -69,9 +75,38 @@ const resetBtn = document.getElementById('reset-btn');
 const uiBar = document.querySelector('.ui-bar');
 const bestScoreDisplay = document.getElementById('best-score-display');
 const container = document.querySelector('.game-container');
+const soundBtn = document.getElementById('mute-btn');
 
 warningText.textContent = `Attention : à partir du niveau ${CHAOS_MODE_LEVEL} le chaos arrive...`;
 timerEl.textContent = START_TIME;
+
+function toggleSound() {
+    isMuted = !isMuted;
+    const btn = document.getElementById('sound-btn');
+    const icon = btn.querySelector('i');
+
+    if (isMuted) {
+        audio.music.volume = 0;
+        audio.wrong.volume = 0;
+        audio.timeup.volume = 0;
+        audio.caught.forEach(s => s.volume = 0);
+        
+        if (icon) icon.setAttribute('data-lucide', 'volume-x');
+        btn.style.borderColor = '#7f8c8d';
+        btn.style.color = '#7f8c8d';
+    } else {
+        audio.music.volume = VOLUMES.music;
+        audio.wrong.volume = VOLUMES.sfx;
+        audio.timeup.volume = VOLUMES.sfx;
+        audio.caught.forEach(s => s.volume = VOLUMES.sfx);
+        
+        if (icon) icon.setAttribute('data-lucide', 'volume-2');
+        btn.style.borderColor = '#b30000';
+        btn.style.color = '#f1c40f';
+    }
+
+    if (window.lucide) lucide.createIcons();
+}
 
 const saveGame = () => {
     if(!isPlaying) return;
@@ -610,6 +645,8 @@ window.onload = () => {
         resetBtn.classList.add('hidden');
     }
 };
+
+soundBtn.addEventListener('click', toggleSound);
 
 startBtn.addEventListener('click', () => {
     const hasSession = localStorage.getItem('wanted_current_session') !== null;
