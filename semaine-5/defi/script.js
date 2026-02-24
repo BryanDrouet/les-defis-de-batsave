@@ -2,10 +2,13 @@ const CHARACTERS = ['Mario', 'Luigi', 'Wario', 'Yoshi'];
 const START_TIME = 10;
 const TIME_BONUS = 5;
 const DARK_MODE_LEVEL = 5;
-
-const MAX_LIGHT_RADIUS = 350; 
+const MAX_LIGHT_RADIUS = 500; 
 const MIN_LIGHT_RADIUS = 70;  
-const LIGHT_SHRINK_STEP = 30; 
+const LIGHT_SHRINK_STEP = 40; 
+
+const params = new URLSearchParams(window.location.search);
+const isDebug = params.get('debug') === 'true';
+const isTorchEnabled = params.get('torch') !== 'false';
 
 const audio = {
     caught: [
@@ -17,7 +20,6 @@ const audio = {
     timeup: new Audio('assets/audio/luigiTimeup.wav'),
     music: new Audio('assets/audio/music.wav')
 };
-
 audio.music.loop = true;
 audio.music.volume = 0.3;
 
@@ -35,9 +37,9 @@ const targetImg = document.getElementById('target-img');
 const shadowOverlay = document.getElementById('shadow-overlay');
 const overlayScreen = document.getElementById('overlay-screen');
 const overlayTitle = document.getElementById('overlay-title');
+const warningText = document.getElementById('warning-text');
 const startBtn = document.getElementById('start-btn');
-
-const isDebug = new URLSearchParams(window.location.search).get('debug') === 'true';
+const resetBtn = document.getElementById('reset-btn');
 const uiBar = document.querySelector('.ui-bar');
 const timerBox = document.querySelector('.timer-box');
 
@@ -45,8 +47,32 @@ if (isDebug && timerBox) {
     timerBox.style.opacity = '0';
 }
 
+const saveGame = () => {
+    if(!isPlaying) return;
+    localStorage.setItem('wanted_current_session', JSON.stringify({ score, level, timeLeft }));
+};
+
+const loadSession = () => {
+    const session = localStorage.getItem('wanted_current_session');
+    if (session) {
+        const data = JSON.parse(session);
+        score = data.score;
+        level = data.level;
+        timeLeft = data.timeLeft;
+        return true;
+    }
+    return false;
+};
+
+const updateBestScore = () => {
+    const best = localStorage.getItem('wanted_best_score') || 0;
+    if (score > best) {
+        localStorage.setItem('wanted_best_score', score);
+    }
+};
+
 function updateFlashlight(x, y) {
-    if (level >= DARK_MODE_LEVEL && isPlaying) {
+    if (level >= DARK_MODE_LEVEL && isPlaying && isTorchEnabled) {
         const uiHeight = uiBar.offsetHeight;
         shadowOverlay.style.setProperty('--x', `${x}px`);
         shadowOverlay.style.setProperty('--y', `${y - uiHeight}px`);
@@ -54,53 +80,46 @@ function updateFlashlight(x, y) {
 }
 
 document.addEventListener('mousemove', (e) => {
-    const container = document.querySelector('.game-container');
-    const rect = container.getBoundingClientRect();
+    const rect = document.querySelector('.game-container').getBoundingClientRect();
     updateFlashlight(e.clientX - rect.left, e.clientY - rect.top);
 });
 
 document.addEventListener('touchmove', (e) => {
-    const container = document.querySelector('.game-container');
-    const rect = container.getBoundingClientRect();
+    const rect = document.querySelector('.game-container').getBoundingClientRect();
     const touch = e.touches[0];
     updateFlashlight(touch.clientX - rect.left, touch.clientY - rect.top);
 }, { passive: true });
 
-function startGame() {
-    score = 0;
-    level = 1;
-    timeLeft = START_TIME;
+function startGame(isResume = false) {
+    if (!isResume) {
+        score = 0;
+        level = 1;
+        timeLeft = START_TIME;
+        localStorage.removeItem('wanted_current_session');
+    }
+    
     isPlaying = true;
-    
     uiBar.classList.remove('hidden');
-    
     scoreEl.textContent = score;
     timerEl.textContent = timeLeft;
     overlayScreen.classList.add('hidden');
-    shadowOverlay.classList.remove('active');
+    
+    warningText.classList.add('hidden');
     
     audio.music.currentTime = 0;
-    audio.music.play().catch(e => console.log("Audio autoplay bloqué", e));
+    audio.music.play().catch(() => {});
 
     startLevel();
     
     if (timerInterval) clearInterval(timerInterval);
     timerInterval = setInterval(() => {
-        if (!isDebug) {
-            timeLeft--;
-        }
-        
+        if (!isDebug) timeLeft--;
         timerEl.textContent = timeLeft;
+        timerEl.style.color = timeLeft <= 5 ? '#ff5454' : '#00d512';
         
-        if (timeLeft <= 5) {
-            timerEl.style.color = 'red';
-        } else {
-            timerEl.style.color = '#b30000';
-        }
-        
-        if (timeLeft <= 0) {
-            gameOver();
-        }
+        saveGame();
+
+        if (timeLeft <= 0) gameOver();
     }, 1000);
 }
 
@@ -115,16 +134,20 @@ function startLevel() {
     if (level >= 20) totalCharacters = 49;
 
     let cols = Math.ceil(Math.sqrt(totalCharacters));
-    
     board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
     board.style.gridTemplateRows = `repeat(${Math.ceil(totalCharacters / cols)}, 1fr)`;
     
-    if (level >= DARK_MODE_LEVEL) {
+    if (level >= DARK_MODE_LEVEL && isTorchEnabled) {
         shadowOverlay.classList.add('active');
+        shadowOverlay.classList.remove('hidden');
+         
         const darkLevelsPassed = level - DARK_MODE_LEVEL;
-        let newRadius = MAX_LIGHT_RADIUS - (darkLevelsPassed * LIGHT_SHRINK_STEP);
-        newRadius = Math.max(newRadius, MIN_LIGHT_RADIUS);
+        
+        let newRadius = Math.max(MAX_LIGHT_RADIUS - (darkLevelsPassed * LIGHT_SHRINK_STEP), MIN_LIGHT_RADIUS);
         shadowOverlay.style.setProperty('--radius', `${newRadius}px`);
+        
+        let newOpacity = Math.min(0.5 + (darkLevelsPassed * 0.1), 0.98);
+        shadowOverlay.style.setProperty('--opacity', newOpacity);
     } else {
         shadowOverlay.classList.remove('active');
     }
@@ -144,9 +167,8 @@ function startLevel() {
             img.dataset.type = 'target';
         } else {
             let distractor;
-            do {
-                distractor = CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)];
-            } while (distractor === currentTarget);
+            do { distractor = CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)]; } 
+            while (distractor === currentTarget);
             img.src = `assets/img/sprite${distractor}.png`;
             img.dataset.type = 'wrong';
         }
@@ -158,32 +180,19 @@ function startLevel() {
 
 function handleCharacterClick(e) {
     if (!isPlaying) return;
-    e.preventDefault(); 
-
-    const type = e.target.dataset.type;
-
-    if (type === 'target') {
-        const randomSound = audio.caught[Math.floor(Math.random() * audio.caught.length)];
-        randomSound.currentTime = 0;
-        randomSound.play();
-
+    if (e.target.dataset.type === 'target') {
+        audio.caught[Math.floor(Math.random() * audio.caught.length)].play();
         score++;
         scoreEl.textContent = score;
-        
         timeLeft = Math.min(timeLeft + TIME_BONUS, 30);
-        timerEl.textContent = timeLeft;
-
         level++;
+        saveGame();
         startLevel();
     } else {
-        audio.wrong.currentTime = 0;
         audio.wrong.play();
-        
         timeLeft = Math.max(0, timeLeft - 3);
-        timerEl.textContent = timeLeft;
         timerEl.classList.add('shake');
         setTimeout(() => timerEl.classList.remove('shake'), 200);
-        
         if (timeLeft <= 0) gameOver();
     }
 }
@@ -191,17 +200,52 @@ function handleCharacterClick(e) {
 function gameOver() {
     isPlaying = false;
     clearInterval(timerInterval);
+    updateBestScore();
+    localStorage.removeItem('wanted_current_session');
+    
     audio.music.pause();
     audio.timeup.play();
-
     uiBar.classList.add('hidden');
-
+    
     overlayTitle.textContent = "GAME OVER";
-    document.getElementById('overlay-desc').textContent = `Score final : ${score}`;
+    const best = localStorage.getItem('wanted_best_score') || 0;
+    document.getElementById('overlay-desc').innerHTML = `Score : ${score}<br><small>Record : ${best}</small>`;
+    
+    warningText.classList.add('hidden');
     startBtn.textContent = "REJOUER";
+    resetBtn.classList.add('hidden'); 
     
     overlayScreen.classList.remove('hidden');
     shadowOverlay.classList.remove('active');
 }
 
-startBtn.addEventListener('click', startGame);
+window.onload = () => {
+    const hasSession = loadSession();
+    
+    if (hasSession) {
+        overlayTitle.textContent = "SESSION REPRISE";
+        document.getElementById('overlay-desc').textContent = `Niveau ${level} - Score ${score}`;
+        warningText.classList.add('hidden');
+        
+        startBtn.textContent = "CONTINUER";
+        resetBtn.classList.remove('hidden');
+    } else {
+        overlayTitle.textContent = "WANTED!";
+        warningText.classList.remove('hidden');
+        startBtn.textContent = "COMMENCER";
+        resetBtn.classList.add('hidden');
+    }
+};
+
+startBtn.addEventListener('click', () => {
+    const hasSession = localStorage.getItem('wanted_current_session') !== null;
+    startGame(hasSession);
+});
+
+resetBtn.addEventListener('click', () => {
+    if(confirm("Voulez-vous vraiment recommencer à zéro ?")) {
+        startGame(false);
+    }
+});
+
+startBtn.addEventListener('click', () => startGame(loadSession()));
