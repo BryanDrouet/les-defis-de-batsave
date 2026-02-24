@@ -350,22 +350,43 @@ button:hover {
 
 .search-container input {
     width: 100%;
-    padding: 5px 10px 5px 30px;
+    padding: 8px 10px 8px 35px;
     border-radius: 4px;
-    border: 1px solid #b30000;
-    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid #b30000;
+    background: rgba(0, 0, 0, 0.3);
     font-family: "Jersey 15", sans-serif;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
+    color: #f1c40f;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.search-container input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+}
+
+.search-container input:focus {
+    background: rgba(0, 0, 0, 0.8);
+    border-color: #f1c40f;
+    box-shadow: 0 0 10px rgba(241, 196, 15, 0.2);
 }
 
 .search-container .search-icon {
     position: absolute;
-    left: 5px;
+    left: 10px;
     top: 50%;
     transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
-    color: #333;
+    width: 18px;
+    height: 18px;
+    color: #b30000;
+    pointer-events: none;
+    transition: color 0.3s ease;
+    z-index: 10;
+}
+
+.search-container:focus-within .search-icon {
+    color: #f1c40f;
 }
 
 .table-wrapper {
@@ -407,7 +428,7 @@ th {
 }
 
 th:hover {
-    background: #d63031;
+    background: #960000;
 }
 
 th .sort-icon {
@@ -427,11 +448,11 @@ tr {
 }
 
 tr:nth-child(even) {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgb(26, 26, 26);
 }
 
 tr:hover {
-    background: rgba(241, 196, 15, 0.2);
+    background: rgb(43, 0, 0);
 }
 
 .proof-link {
