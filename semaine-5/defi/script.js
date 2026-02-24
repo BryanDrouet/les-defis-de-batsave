@@ -256,6 +256,7 @@ function startLevel() {
         if (i === targetIndex) {
             img.src = `assets/img/sprite${currentTarget}.png`;
             img.dataset.type = 'target';
+            img.classList.add('target');
         } else {
             let distractor;
             do { distractor = CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)]; } 

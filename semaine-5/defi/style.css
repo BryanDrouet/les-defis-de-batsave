@@ -153,6 +153,7 @@ body {
 }
 
 .character {
+    z-index: 1;
     width: 100%;
     height: auto;
     max-width: 60px; 
@@ -166,6 +167,10 @@ body {
 
 .character:active {
     transform: scale(0.9);
+}
+
+.character.target {
+    z-index: 10;
 }
 
 #shadow-overlay {
