@@ -140,6 +140,8 @@ h2 i, h3 i, h4 i, strong i {
     transform: rotate(-3deg);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     margin: 3px;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
 }
 
 .wanted-poster:hover {
