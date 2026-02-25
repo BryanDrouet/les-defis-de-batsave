@@ -5,29 +5,97 @@
     word-break: break-word;
 }
 
+@media (max-width: 480px) {
+    .mechanics {
+            grid-template-columns: 1fr;
+        }
+
+        .poster-container {
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .progress-header strong svg {
+            display: none;
+        }
+
+        .wanted-poster {
+            height: 160px;
+        }
+
+        .progress-footer {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .progress-footer * {
+            text-align: left;
+        }
+}
+
+@keyframes progress-stripes {
+0% { background-position: 0 0; }
+    100% { background-position: 20px 0; }
+}
+
+@keyframes spin {
+0% { transform: rotate(360deg); }
+    100% { transform: rotate(0deg); }
+}
+
 body {
-    font-family: "Rubik", sans-serif;
     background-color: #f4f4f9;
     color: #333;
+    font-family: "Rubik", sans-serif;
     line-height: 1.6;
     margin: 20px;
 }
 
 a {
+    background-image: linear-gradient(#52baff, #52baff);
+    background-position: left bottom;
+    background-repeat: no-repeat;
+    background-size: 0% 2px;
     color: #3498db;
     font-weight: bold;
     text-decoration: none;
-    word-break: break-word; 
-    background-image: linear-gradient(#52baff, #52baff);
-    background-position: left bottom;
-    background-size: 0% 2px;
-    background-repeat: no-repeat;
     transition: background-size 0.3s ease-in-out, color 0.2s ease-in-out;
+    word-break: break-word;
 }
 
 a:hover {
+    background-size: 100% 2px;
     color: #52baff;
-    background-size: 100% 2px; 
+}
+
+.card h4 {
+    align-items: center;
+    display: flex;
+    font-size: 1.1rem;
+}
+
+.card i {
+    color: #e67e22;
+}
+
+.card p {
+    color: #666;
+    font-size: 0.95rem;
+    text-align: left;
+}
+
+.card, .theme-teaser {
+    align-items: flex-start;
+    background: white;
+    border-radius: 12px;
+    display: flex;
+    filter: drop-shadow(3px 3px 0px #00000038);
+    flex-direction: column;
+    flex: 1 1 250px;
+    gap: 10px;
+    justify-content: flex-start;
+    max-width: 100%;
+    padding: 25px;
 }
 
 .defi-link {
@@ -40,24 +108,15 @@ a:hover {
     display: flex;
     flex-direction: column;
     gap: 50px;
-    max-width: 800px;
     margin: 0 auto;
+    max-width: 800px;
     width: 100%;
 }
 
-h1, h2, h3, h4, strong {
-    color: #2c3e50;
+.game-concept {
     display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-}
-
-h2 i, h3 i, h4 i, strong i {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
 }
 
 .game-concept p, .card h4, h1, h2, h3, h4, strong,
@@ -67,10 +126,19 @@ h2 i, h3 i, h4 i, strong i {
     margin: 0;
 }
 
-.game-concept {
+h1, h2, h3, h4, strong {
+    align-items: center;
+    color: #2c3e50;
     display: flex;
-    gap: 20px;
-    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+h2 i, h3 i, h4 i, strong i {
+    align-items: center;
+    display: inline-flex;
+    flex-shrink: 0;
+    justify-content: center;
 }
 
 .mechanics {
@@ -80,25 +148,88 @@ h2 i, h3 i, h4 i, strong i {
     width: 100%;
 }
 
-.card, .theme-teaser {
+.poster-container {
+    align-items: center;
     display: flex;
-    flex-direction: column;
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    filter: drop-shadow(3px 3px 0px #00000038);
-    align-items: flex-start;
-    justify-content: flex-start;
+    gap: 20px;
+    justify-content: center;
+}
+
+.progress-bar-container {
+    background-color: #ecf0f1;
+    border-radius: 10px;
+    height: 12px;
+    overflow: hidden;
+    width: 100%;
+}
+
+.progress-bar-fill {
+    animation: progress-stripes 1s linear infinite;
+    background-color: #3498db;
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+    background-size: 20px 20px;
+    border-radius: 10px;
+    height: 100%;
+    transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 0%;
+}
+
+.progress-footer {
+    align-items: center;
+    display: flex;
     gap: 10px;
-    flex: 1 1 250px;
-    max-width: 100%;
+    justify-content: space-between;
+}
+
+.progress-header {
+    align-items: center;
+    color: #2c3e50;
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+}
+
+.progress-header strong {
+    align-items: center;
+    display: flex;
+    font-size: 1.1rem;
+    gap: 10px;
+}
+
+.progress-header svg {
+    animation: spin 2s linear infinite;
+    color: #3498db;
+}
+
+.progress-percentage {
+    color: #3498db;
+    font-weight: bold;
+    text-align: right;
+    width: stretch;
+}
+
+.progress-section {
+    background: white;
+    border-radius: 12px;
+    display: flex;
+    filter: drop-shadow(3px 3px 0px #00000038);
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+}
+
+.progress-status {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    font-style: italic;
+    text-align: right;
 }
 
 .theme-teaser {
-    filter: drop-shadow(3px 3px 0px #00000050) !important;
     background: #2c3e50;
-    flex: none;
     color: white;
+    filter: drop-shadow(3px 3px 0px #00000050) !important;
+    flex: none;
     gap: 10px;
 }
 
@@ -106,148 +237,17 @@ h2 i, h3 i, h4 i, strong i {
     color: #f1c40f;
 }
 
-.card h4 {
-    font-size: 1.1rem;
-    display: flex;
-    align-items: center;
-}
-
-.card p {
-    font-size: 0.95rem;
-    color: #666;
-    text-align: left;
-}
-
-.card i {
-    color: #e67e22;
-}
-
-.poster-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-}
-
 .wanted-poster {
-    height: 100px;
     aspect-ratio: 1/1;
     border-radius: 6px;
     filter: drop-shadow(3px 3px 0px #00000038);
+    height: 100px;
+    margin: 3px;
     transform: rotate(-3deg);
     transition: transform 0.3s ease-in-out, filter 0.3s ease-in-out;
-    margin: 3px;
 }
 
 .wanted-poster:hover {
-    transform: rotate(0deg) scale(1.05);
     filter: drop-shadow(3px 3px 0px #00000054);
-}
-
-.progress-section {
-    display: flex;
-    gap: 10px;
-    flex-direction: column;
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    filter: drop-shadow(3px 3px 0px #00000038);
-}
-
-.progress-footer {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    align-items: center;
-}
-
-.progress-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: #2c3e50;
-    gap: 10px;
-}
-
-.progress-header strong {
-    font-size: 1.1rem;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.progress-header svg {
-    color: #3498db;
-    animation: spin 2s linear infinite;
-}
-
-.progress-percentage {
-    font-weight: bold;
-    color: #3498db;
-    width: stretch;
-    text-align: right;
-}
-
-.progress-bar-container {
-    width: 100%;
-    height: 12px;
-    background-color: #ecf0f1;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.progress-bar-fill {
-    width: 0%;
-    height: 100%;
-    border-radius: 10px;
-    transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-    background-color: #3498db;
-    background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
-    background-size: 20px 20px;
-    animation: progress-stripes 1s linear infinite;
-}
-
-.progress-status {
-    font-size: 0.9rem;
-    color: #7f8c8d;
-    font-style: italic;
-    text-align: right;
-}
-
-@keyframes spin {
-    0% { transform: rotate(360deg); }
-    100% { transform: rotate(0deg); }
-}
-
-@keyframes progress-stripes {
-    0% { background-position: 0 0; }
-    100% { background-position: 20px 0; }
-}
-
-@media (max-width: 480px) {
-    .mechanics {
-        grid-template-columns: 1fr;
-    }
-
-    .poster-container {
-        flex-direction: column;
-        gap: 30px;
-    }
-
-    .progress-header strong svg {
-        display: none;
-    }
-
-    .wanted-poster {
-        height: 160px;
-    }
-
-    .progress-footer {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .progress-footer * {
-        text-align: left;
-    }
+    transform: rotate(0deg) scale(1.05);
 }

@@ -1,194 +1,195 @@
 import os
-import shutil
 import re
+import shutil
 
-def list_css_files(start_path='.'):
-    css_files = []
-    for root, dirs, files in os.walk(start_path):
-        if '.git' in dirs: dirs.remove('.git')
-        if 'node_modules' in dirs: dirs.remove('node_modules')
-        
-        for file in files:
-            if file.endswith('.css') and not file.endswith('.backup.css'):
-                full_path = os.path.join(root, file)
-                rel_path = os.path.relpath(full_path, start_path)
-                css_files.append(rel_path)
-    return css_files
-
-def get_raw_blocks(content):
-    """
-    Découpe le CSS en blocs logiques (règles complètes) en respectant les accolades imbriquées.
-    """
-    blocks = []
-    current_block = ""
-    brace_count = 0
-    in_comment = False
+def get_category_priority(selector):
+    selector = selector.strip()
     
+    if selector.startswith("@font-face"): return 1
+    if selector.startswith("@import"): return 2
+    if selector.startswith("@media"): return 3
+    if selector.startswith("@keyframes") or selector.startswith("@-webkit-keyframes"): return 4
+    
+    if selector.startswith("@"): return 5
+    
+    if selector.startswith("::"): return 7
+    if selector.startswith(":"): return 6
+    
+    if selector.startswith("*"): return 8
+    if selector.startswith("html"): return 9
+    if selector.startswith("body"): return 10
+    
+    return 11
+
+def get_sort_key_for_rest(selector):
+    cleaned = re.sub(r'[.#\-:]', '', selector).lower().strip()
+    return cleaned
+
+def sort_properties(body_content, indent_str):
+    """Trie les propriétés à l'intérieur d'un bloc {}"""
+    props = [p.strip() for p in body_content.split(';') if p.strip()]
+    props.sort()
+    
+    if not props:
+        return ""
+    
+    sorted_body = ""
+    for prop in props:
+        if not prop.endswith(';'):
+            prop += ';'
+        sorted_body += f"\n{indent_str}{prop}"
+    
+    return sorted_body + "\n"
+
+def reindent_lines(body_content, indent_str):
+    """Ré-indente proprement un bloc de texte ligne par ligne"""
+    lines = body_content.split('\n')
+    indented_lines = []
+    for line in lines:
+        cleaned = line.strip()
+        if cleaned:
+            indented_lines.append(indent_str + cleaned)
+    
+    if indented_lines:
+        return "\n" + "\n".join(indented_lines) + "\n"
+    else:
+        return ""
+
+def parse_and_sort_css(content):
+    indent_match = re.search(r'\n([ \t]+)', content)
+    indent_str = indent_match.group(1) if indent_match else "    "
+
+    blocks = []
+    buffer = ""
+    depth = 0
+    in_comment = False
     i = 0
+    
     while i < len(content):
         char = content[i]
         
-        if not in_comment and content[i:i+2] == '/*':
+        if content[i:i+2] == '/*' and not in_comment:
             in_comment = True
-        elif in_comment and content[i:i+2] == '*/':
+            buffer += char
+            i += 1
+            continue
+        if content[i:i+2] == '*/' and in_comment:
             in_comment = False
-        
-        current_block += char
-        
-        if not in_comment:
-            if char == '{':
-                brace_count += 1
-            elif char == '}':
-                brace_count -= 1
-                if brace_count == 0:
-                    if current_block.strip():
-                        blocks.append(current_block.strip())
-                    current_block = ""
+            buffer += char + content[i+1]
+            i += 2
+            continue
+            
+        if in_comment:
+            buffer += char
+            i += 1
+            continue
+
+        if char == '{':
+            if depth == 0:
+                selector = buffer.strip()
+                buffer = ""
+            else:
+                buffer += char
+            depth += 1
+        elif char == '}':
+            depth -= 1
+            if depth == 0:
+                body = buffer.strip()
+                
+                if selector.startswith('@media') or selector.startswith('@keyframes') or selector.startswith('@-webkit-keyframes'):
+                    formatted_body = reindent_lines(body, indent_str)
+
+                elif selector.startswith('@font-face'):
+                     formatted_body = sort_properties(body, indent_str)
+                     
+                else:
+                    formatted_body = sort_properties(body, indent_str)
+
+                blocks.append({
+                    'selector': selector,
+                    'body': formatted_body
+                })
+                buffer = ""
+            else:
+                buffer += char
+        else:
+            buffer += char
         
         i += 1
-        
-    if current_block.strip():
-        blocks.append(current_block.strip())
-        
-    return blocks
 
-def sort_key_clean(text):
-    """
-    Nettoie la chaîne pour le tri alphabétique (enlève ., #, -- et espaces)
-    """
-    first_line = text.split('{')[0].strip()
-    clean = re.sub(r'[.#\-\s]', '', first_line).lower()
-    return clean
-
-def sort_properties_inside_block(block_content):
-    """
-    Trie les propriétés à l'intérieur d'un bloc (ex: :root)
-    """
-    match = re.match(r'([^{]+)\{\s*(.*)\s*\}', block_content, re.DOTALL)
-    if not match:
-        return block_content
-    
-    selector = match.group(1).strip()
-    body = match.group(2).strip()
-    
-    props = [p.strip() for p in body.split(';') if p.strip()]
-    props.sort(key=lambda x: x.replace('--', '').strip().lower())
-    
-    new_body = ";\n    ".join(props)
-    if new_body:
-        new_body += ";"
+    def sort_logic(block):
+        sel = block['selector']
+        priority = get_category_priority(sel)
         
-    return f"{selector} {{\n    {new_body}\n}}"
-
-def sort_media_query(block_content):
-    """
-    Trie les blocs CSS à l'intérieur d'une media query
-    """
-    first_brace = block_content.find('{')
-    last_brace = block_content.rfind('}')
-    
-    if first_brace == -1 or last_brace == -1:
-        return block_content
-        
-    header = block_content[:first_brace+1]
-    inner_content = block_content[first_brace+1:last_brace]
-    
-    sorted_inner = process_css_content(inner_content, is_root=False)
-    
-    indented_inner = "\n".join(["    " + line for line in sorted_inner.split('\n')])
-    
-    return f"{header}\n{indented_inner}\n}}"
-
-def process_css_content(content, is_root=True):
-    blocks = get_raw_blocks(content)
-    
-    font_face = []
-    keyframes = []
-    media = []
-    root = []
-    universal = []
-    html_tag = []
-    body_tag = []
-    rest = []
-    
-    for block in blocks:
-        selector = block.split('{')[0].strip().lower()
-        
-        if selector.startswith('@font-face'):
-            font_face.append(block)
-        elif selector.startswith('@keyframes') or selector.startswith('@-webkit-keyframes'):
-            keyframes.append(block)
-        elif selector.startswith('@media'):
-            media.append(sort_media_query(block))
-        elif selector.startswith(':root'):
-            root.append(sort_properties_inside_block(block))
-        elif selector.startswith('*'):
-            universal.append(block)
-        elif selector.startswith('html'):
-            html_tag.append(block)
-        elif selector.startswith('body'):
-            body_tag.append(block)
+        if priority == 11:
+            secondary = get_sort_key_for_rest(sel)
         else:
-            rest.append(block)
+            secondary = sel
+            
+        return (priority, secondary)
 
-    font_face.sort(key=sort_key_clean)
-    keyframes.sort(key=sort_key_clean)
-    media.sort(key=sort_key_clean)
-    root.sort(key=sort_key_clean)
+    blocks.sort(key=sort_logic)
+
+    output = ""
+    for block in blocks:
+        output += f"{block['selector']} {{{block['body']}}}\n\n"
     
-    rest.sort(key=sort_key_clean)
-    
-    ordered_blocks = (
-        font_face +
-        keyframes +
-        media +
-        root +
-        universal +
-        html_tag +
-        body_tag +
-        rest
-    )
-    
-    separator = "\n\n" if is_root else "\n"
-    return separator.join(ordered_blocks)
+    return output.strip() + "\n"
+
+def list_css_files(root_dir):
+    css_files = []
+    for dirpath, _, filenames in os.walk(root_dir):
+        for filename in filenames:
+            if filename.endswith('.css') and not filename.endswith('.backup.css'):
+                full_path = os.path.join(dirpath, filename)
+                css_files.append(full_path)
+    return css_files
 
 def main():
-    print("--- Trieur de CSS pour Batsave ---")
-    files = list_css_files()
+    root_dir = os.getcwd()
+    print(f"Recherche de fichiers CSS dans : {root_dir}")
+    
+    files = list_css_files(root_dir)
     
     if not files:
         print("Aucun fichier CSS trouvé.")
         return
 
     print("\nFichiers trouvés :")
-    for i, f in enumerate(files):
-        print(f"[{i+1}] {f}")
-        
-    choice = input("\nLequel veux-tu trier ? (numéro) : ")
-    
+    for idx, f in enumerate(files):
+        print(f"[{idx + 1}] {os.path.relpath(f, root_dir)}")
+
     try:
-        index = int(choice) - 1
-        if 0 <= index < len(files):
-            target_file = files[index]
+        choice = input("\nQuel fichier voulez-vous trier ? (entrez le numéro) : ")
+        file_index = int(choice) - 1
+        
+        if 0 <= file_index < len(files):
+            target_file = files[file_index]
             
             backup_file = target_file.replace('.css', '.backup.css')
-            shutil.copy(target_file, backup_file)
-            print(f"✅ Backup créé : {backup_file}")
+            shutil.copy2(target_file, backup_file)
+            print(f"✅ Backup créé : {os.path.relpath(backup_file, root_dir)}")
             
             with open(target_file, 'r', encoding='utf-8') as f:
                 content = f.read()
             
-            new_content = process_css_content(content)
-            
-            with open(target_file, 'w', encoding='utf-8') as f:
-                f.write(new_content)
+            try:
+                sorted_content = parse_and_sort_css(content)
                 
-            print(f"✨ CSS trié et sauvegardé dans : {target_file}")
-            
+                with open(target_file, 'w', encoding='utf-8') as f:
+                    f.write(sorted_content)
+                
+                print(f"🚀 Succès ! {os.path.relpath(target_file, root_dir)} a été trié proprement.")
+                
+            except Exception as e:
+                print(f"❌ Erreur lors du parsing CSS : {e}")
+                print("Restauration du backup...")
+                shutil.copy2(backup_file, target_file)
+                
         else:
             print("Numéro invalide.")
     except ValueError:
-        print("Ce n'est pas un nombre.")
+        print("Veuillez entrer un nombre valide.")
 
 if __name__ == "__main__":
     main()
