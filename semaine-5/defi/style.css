@@ -726,4 +726,6 @@ input[type=range]::-webkit-slider-runnable-track {
     .best-score-badge { margin-bottom: 60px; }
     button { padding: 8px 20px; font-size: 1.2rem; }
     .difficulty-start-container button { width: 95% !important; padding: 8px 20px !important; }
+    .top-buttons { top: 0; right: 0; gap: 0; width: 100%; justify-content: flex-end; }
+    .settings-btn { width: 50%;}
 }
