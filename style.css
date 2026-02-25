@@ -7,31 +7,31 @@
 
 @media (max-width: 650px) {
     .card {
-            width: 100%;
-        }
+        width: 100%;
+    }
 
-        .search-bar {
-            max-width: 90%;
-        }
+    .search-bar {
+        max-width: 90%;
+    }
 
-        .card-links {
-            flex-direction: column;
-        }
+    .card-links {
+        flex-direction: column;
+    }
 
-        .card-links .card-btn:first-child {
-            border-radius: 0;
-            border: 1px solid #ddd;
-            border-bottom: 0;
-        }
+    .card-links .card-btn:first-child {
+        border-radius: 0;
+        border: 1px solid #ddd;
+        border-bottom: 0;
+    }
 
-        .card-links .card-btn.play-btn {
-            border-radius: 0 0 8px 8px;
-            border: 1px solid #ddd;
-        }
+    .card-links .card-btn.play-btn {
+        border-radius: 0 0 8px 8px;
+        border: 1px solid #ddd;
+    }
 
-        .preview-toggle.collapsed {
-            border: 1px solid #ddd;
-        }
+    .preview-toggle.collapsed {
+        border: 1px solid #ddd;
+    }
 }
 
 ::-webkit-scrollbar {

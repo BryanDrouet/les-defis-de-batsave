@@ -7,39 +7,39 @@
 
 @media (max-width: 480px) {
     .mechanics {
-            grid-template-columns: 1fr;
-        }
+        grid-template-columns: 1fr;
+    }
 
-        .poster-container {
-            flex-direction: column;
-            gap: 30px;
-        }
+    .poster-container {
+        flex-direction: column;
+        gap: 30px;
+    }
 
-        .progress-header strong svg {
-            display: none;
-        }
+    .progress-header strong svg {
+        display: none;
+    }
 
-        .wanted-poster {
-            height: 160px;
-        }
+    .wanted-poster {
+        height: 160px;
+    }
 
-        .progress-footer {
-            flex-direction: column;
-            align-items: flex-start;
-        }
+    .progress-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 
-        .progress-footer * {
-            text-align: left;
-        }
+    .progress-footer * {
+        text-align: left;
+    }
 }
 
 @keyframes progress-stripes {
-0% { background-position: 0 0; }
+    0% { background-position: 0 0; }
     100% { background-position: 20px 0; }
 }
 
 @keyframes spin {
-0% { transform: rotate(360deg); }
+    0% { transform: rotate(360deg); }
     100% { transform: rotate(0deg); }
 }
 

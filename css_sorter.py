@@ -42,12 +42,14 @@ def sort_properties(body_content, indent_str):
     return sorted_body + "\n"
 
 def reindent_lines(body_content, indent_str):
-    """Ré-indente proprement un bloc de texte ligne par ligne"""
+    """Ré-indente proprement et ajoute des espaces aux accolades condensées"""
     lines = body_content.split('\n')
     indented_lines = []
     for line in lines:
         cleaned = line.strip()
         if cleaned:
+            cleaned = re.sub(r'\{(?!\s)', '{ ', cleaned)
+            cleaned = re.sub(r'(?<!\s)\}', ' }', cleaned)
             indented_lines.append(indent_str + cleaned)
     
     if indented_lines:
