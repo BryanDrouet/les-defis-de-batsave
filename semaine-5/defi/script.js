@@ -63,7 +63,6 @@ let autoLight = {
     dy: 4
 };
 
-// Références DOM
 const board = document.getElementById('game-board');
 const scoreEl = document.getElementById('score');
 const timerEl = document.getElementById('timer');
@@ -80,11 +79,10 @@ const container = document.querySelector('.game-container');
 const buttonGroup = document.querySelector('.button-group');
 const countdownOverlay = document.getElementById('countdown-overlay');
 
-// Modals
 const settingsModal = document.getElementById('settings-modal');
 const settingsBtn = document.getElementById('settings-btn');
 const closeSettingsBtn = document.getElementById('close-settings');
-const quitGameBtn = document.getElementById('quit-game-btn'); // Nouveau bouton quitter
+const quitGameBtn = document.getElementById('quit-game-btn');
 
 const leaderboardModal = document.getElementById('leaderboard-modal');
 const leaderboardBtn = document.getElementById('leaderboard-btn');
@@ -94,8 +92,6 @@ const musicSlider = document.getElementById('music-slider');
 const sfxSlider = document.getElementById('sfx-slider');
 
 timerEl.textContent = START_TIME;
-
-/* --- GESTION PAUSE & MODALS --- */
 
 function togglePause(pauseState) {
     if (!isPlaying) return;
@@ -112,7 +108,6 @@ function togglePause(pauseState) {
 function openModal(modal) {
     togglePause(true);
     
-    // Logique spécifique pour les paramètres : Afficher/Cacher le bouton Quitter
     if (modal === settingsModal) {
         if (isPlaying) {
             quitGameBtn.style.display = 'block';
@@ -128,13 +123,19 @@ function openModal(modal) {
 }
 
 function closeModal(modal) {
+    const visibleModals = document.querySelectorAll('.modal.visible').length;
+
+    if (visibleModals === 1 && isPlaying) {
+        countdownOverlay.classList.remove('hidden');
+        countdownOverlay.textContent = '3';
+    }
+
     modal.classList.remove('visible');
     
     setTimeout(() => {
         if (!modal.classList.contains('visible')) {
            modal.classList.add('hidden');
            
-           // Si on ferme une modal et qu'aucune autre n'est ouverte
            const anyVisible = document.querySelectorAll('.modal.visible').length > 0;
            
            if (!anyVisible) {
@@ -165,21 +166,18 @@ function startResumeCountdown() {
     }, 1000);
 }
 
-// Event Listeners Modals
 settingsBtn.addEventListener('click', () => openModal(settingsModal));
 closeSettingsBtn.addEventListener('click', () => closeModal(settingsModal));
 
 leaderboardBtn.addEventListener('click', () => openModal(leaderboardModal));
 closeLeaderboardBtn.addEventListener('click', () => closeModal(leaderboardModal));
 
-// Clic extérieur pour fermer
 [settingsModal, leaderboardModal].forEach(modal => {
     modal.addEventListener('click', (e) => {
         if (e.target === modal) closeModal(modal);
     });
 });
 
-// Sliders Audio
 musicSlider.addEventListener('input', (e) => {
     settings.musicVolume = parseFloat(e.target.value);
     audio.music.volume = settings.musicVolume;
@@ -191,15 +189,12 @@ sfxSlider.addEventListener('input', (e) => {
     document.getElementById('sfx-val').textContent = Math.round(settings.sfxVolume * 100) + '%';
 });
 
-// LOGIQUE QUITTER LA PARTIE
 if(quitGameBtn) {
     quitGameBtn.addEventListener('click', () => {
         if(confirm("Voulez-vous vraiment abandonner la partie en cours ?")) {
-            // Fermer la modal sans déclencher le compte à rebours
             settingsModal.classList.remove('visible');
             setTimeout(() => settingsModal.classList.add('hidden'), 300);
             
-            // Arrêter le jeu
             quitGame();
         }
     });
@@ -211,29 +206,22 @@ function quitGame() {
     cancelAnimationFrame(animationFrameId); 
     clearInterval(timerInterval);
     
-    // Pas de sauvegarde de score ici, c'est un abandon
     localStorage.removeItem('wanted_current_session');
     
     audio.music.pause();
     
-    // Reset UI
     uiBar.classList.add('hidden');
-    board.innerHTML = ''; // Nettoyer le plateau
+    board.innerHTML = '';
     shadowOverlay.classList.remove('active');
     
-    // Reset Écran Titre
     overlayTitle.textContent = "WANTED!";
     overlayDesc.textContent = "Trouve le personnage affiché avant la fin du temps.";
     
-    // Afficher l'écran titre
     overlayScreen.classList.remove('hidden');
     initStartScreen();
     
-    // S'assurer que les boutons du haut sont visibles
     document.querySelector('.top-buttons').style.display = 'flex';
 }
-
-/* --- FONCTIONS JEU --- */
 
 const saveGame = () => {
     if(!isPlaying) return;
@@ -312,7 +300,6 @@ document.addEventListener('pointermove', (e) => {
     }
 });
 
-/* --- LEADERBOARD LOGIC --- */
 document.addEventListener('DOMContentLoaded', () => {
     loadLeaderboard();
     
@@ -527,7 +514,6 @@ function startGame(isResume = false) {
     
     overlayScreen.classList.add('hidden');
     
-    // En jeu, le bouton settings reste visible
     document.querySelector('.top-buttons').style.display = 'flex';
     
     isUserTouching = false; 
@@ -590,7 +576,6 @@ function startLevel() {
     let sharedDirX = 0;
     let sharedDirY = 0;
 
-    // --- LOGIQUE CHAOS ---
     if (level >= CHAOS_MODE_LEVEL) {
         levelBehavior = Math.random() < 0.5 ? 'bounce' : 'wrap';
         const speedProgress = Math.min((level - CHAOS_MODE_LEVEL) / (CHAOS_MAX_SPEED_LEVEL - CHAOS_MODE_LEVEL), 1);
@@ -624,26 +609,22 @@ function startLevel() {
             sharedDirY = (Math.random() < 0.5 ? -1 : 1) * currentSpeed;
         }
         
-        // CSS pour Chaos
         board.style.display = 'block'; 
         board.style.position = 'relative';
-        board.style.gridTemplateColumns = 'none'; // Reset grid styles
+        board.style.gridTemplateColumns = 'none';
         board.style.gridTemplateRows = 'none';
     } 
-    // --- LOGIQUE GRID (MODE NORMAL) ---
     else {
         board.style.display = 'grid';
         let cols = Math.ceil(Math.sqrt(totalCharacters));
         let rows = Math.ceil(totalCharacters / cols);
         
-        // FIX : Force totalCharacters à remplir parfaitement la grille
         totalCharacters = cols * rows;
 
         board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
         board.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
     }
     
-    // --- GESTION LUMIERE ---
     if (level >= DARK_MODE_LEVEL) {
         shadowOverlay.classList.add('active');
         shadowOverlay.classList.remove('hidden');
@@ -844,7 +825,7 @@ function initStartScreen() {
             btn.textContent = m.label;
             btn.style.width = '200px'; 
             btn.onclick = () => {
-                settings.gameMode = m.id; // Mise à jour directe
+                settings.gameMode = m.id;
                 startGame(false);
             };
             diffContainer.appendChild(btn);
