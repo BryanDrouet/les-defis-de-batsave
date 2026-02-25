@@ -34,13 +34,21 @@
 }
 
 @keyframes progress-stripes {
-    0% { background-position: 0 0; }
-    100% { background-position: 20px 0; }
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: 20px 0;
+    }
 }
 
 @keyframes spin {
-    0% { transform: rotate(360deg); }
-    100% { transform: rotate(0deg); }
+    0% {
+        transform: rotate(360deg);
+    }
+    100% {
+        transform: rotate(0deg);
+    }
 }
 
 body {
@@ -84,7 +92,7 @@ a:hover {
     text-align: left;
 }
 
-.card, .theme-teaser {
+.card, .theme-tease-in-outr {
     align-items: flex-start;
     background: white;
     border-radius: 12px;
@@ -120,7 +128,7 @@ a:hover {
 }
 
 .game-concept p, .card h4, h1, h2, h3, h4, strong,
-.card p, .theme-teaser h3, .theme-teaser p,
+.card p, .theme-tease-in-outr h3, .theme-tease-in-outr p,
 .poster-container p, .progress-header,
 .progress-header strong, .progress-status {
     margin: 0;
@@ -225,7 +233,7 @@ h2 i, h3 i, h4 i, strong i {
     text-align: right;
 }
 
-.theme-teaser {
+.theme-tease-in-outr {
     background: #2c3e50;
     color: white;
     filter: drop-shadow(3px 3px 0px #00000050) !important;
@@ -233,7 +241,7 @@ h2 i, h3 i, h4 i, strong i {
     gap: 10px;
 }
 
-.theme-teaser h3 {
+.theme-tease-in-outr h3 {
     color: #f1c40f;
 }
 

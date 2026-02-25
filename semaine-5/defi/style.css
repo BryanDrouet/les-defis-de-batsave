@@ -9,31 +9,107 @@
 }
 
 @media (max-width: 480px) {
-    .ui-bar {padding: 0 5px;}
-    .score-box, .timer-box {font-size: 1.5rem; padding: 5px;}
-    .board {padding: 10px; gap: 5px;}
-    .character {max-width: 45px;}
-    .settings-btn {width: 40px; height: 40px;}
-    table {font-size: 0.8rem;}
-    th, td {padding: 4px;}
-    .message-box h1 {font-size: 3rem; letter-spacing: 4px;}
-    .message-box p {font-size: 1.2rem; max-width: 90%;}
-    .table-wrapper {max-height: 250px;}
-    .message-box {justify-content: flex-start; gap: 15px;}
-    .button-group {flex-direction: column;}
-    #leaderboard-modal .modal-content {width: 95% !important; max-width: 95%; padding: 15px;}
-    button {padding: 8px 20px; font-size: 1.2rem;}
-    .button-group {width: 90%;}
-    button {max-width: 260px; width: 95% !important; padding: 8px 20px !important;}
-    .top-buttons {top: 0; right: 0; gap: 5px; width: 100%; justify-content: flex-end;}
-    .settings-btn {width: 50%;}
-    .legal-notice p {font-size: 0.7rem;}
+    .ui-bar {
+        padding: 0 5px !important;
+    }
+
+    .score-box, .timer-box {
+        font-size: 1.5rem !important; 
+        padding: 5px !important;
+    }
+
+    .board {
+        padding: 10px !important;
+        gap: 5px !important;
+    }
+
+    .character {
+        max-width: 45px !important;
+    }
+    
+    .settings-btn {
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    table {
+        font-size: 0.8rem !important;
+    }
+    
+    th, td {
+        padding: 4px !important;
+    }
+    
+    .message-box h1 {
+        font-size: 3rem !important;
+        letter-spacing: 4px !important;
+    }
+    
+    .message-box p {
+        font-size: 1.2rem !important;
+        max-width: 90% !important;
+    }
+    
+    .table-wrapper {
+        max-height: 250px !important;
+    }
+    
+    .message-box {
+        justify-content: flex-start !important;
+        gap: 15px !important;
+    }
+    
+    #leaderboard-modal .modal-content {
+        width: 95% !important;
+        max-width: 95% !important;
+        padding: 15px !important;
+    }
+    
+    button {
+        padding: 8px 20px !important;
+        font-size: 1.2rem !important;
+    }
+    
+    .button-group {
+        width: 90% !important;
+    }
+    
+    button {
+        max-width: 260px !important;
+        width: 95% !important;
+        padding: 8px 20px !important;
+    }
+    
+    .top-buttons {
+        top: 0 !important;
+        right: 0 !important;
+        gap: 5px !important;
+        width: 100% !important;
+        justify-content: flex-end !important;
+    }
+
+    .settings-btn {
+        width: 50% !important;
+    }
+
+    .legal-notice p {
+        font-size: 0.7rem !important;
+    }
 }
 
 @keyframes popIn {
-    0% {transform: scale(0); opacity: 0;}
-    80% {transform: scale(1.1); opacity: 1;}
-    100% {transform: scale(1); opacity: 1;}
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    80% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 :root {
@@ -162,8 +238,7 @@ button {
     justify-content: center;
     padding: 10px 30px;
     position: relative;
-    transition: transform 0.1s ease, background-color 0.3s ease, color 0.3s ease
-    box-shadow 0.3s ease;
+    transition: transform 0.1s ease-in-out, background-color 0.3s ease-in-out, color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
 button:active {
@@ -178,10 +253,15 @@ button:active {
 }
 
 .button-group {
+    flex-direction: column;
     align-items: center;
     display: flex;
     gap: 20px;
     z-index: 5;
+}
+
+.button-group button {
+    width: 200px;
 }
 
 button:hover {
@@ -202,7 +282,7 @@ button:hover {
     max-height: 100%;
     max-width: 60px;
     object-fit: contain;
-    transition: transform 0.1s ease;
+    transition: transform 0.1s ease-in-out;
     width: 100%;
     will-change: transform;
     z-index: 1;
@@ -289,7 +369,7 @@ button:hover {
     position: absolute;
     text-shadow: 6px 6px 0 var(--col-red);
     top: 0;
-    transition: opacity 0.5s ease, backdrop-filter 0.5s ease, visibility 0.5s ease;
+    transition: opacity 0.5s ease-in-out, backdrop-filter 0.5s ease-in-out, visibility 0.5s ease-in-out;
     visibility: visible;
     width: 100%;
     z-index: 300;
@@ -317,7 +397,7 @@ button:hover {
     font-size: 1rem;
     margin: 0;
     padding: 8px;
-    transition: transform 0.1s ease, background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.1s ease-in-out, background-color 0.3s ease-in-out, color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
 .diff-btn.active {
@@ -462,7 +542,7 @@ input[type=range]::-webkit-slider-thumb {
 .legal-notice p {
     color: var(--col-grey-light);
     font-family: 'LowresPixel', sans-serif !important;
-    font-size: 0.85rem;
+    font-size: 0.85rem !important;
     line-height: 1.4;
     margin: 0;
     max-width: 100% !important;
@@ -508,7 +588,7 @@ input[type=range]::-webkit-slider-thumb {
     pointer-events: none;
     position: absolute;
     top: 0;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
     visibility: hidden;
     width: 100%;
     z-index: 200;
@@ -648,7 +728,7 @@ input[type=range]::-webkit-slider-thumb {
     font-size: 1rem;
     outline: none;
     padding: 10px 10px 10px 35px;
-    transition: all 0.3s ease;
+    transition: all 0.3s ease-in-out;
     width: 100%;
 }
 
@@ -672,7 +752,7 @@ input[type=range]::-webkit-slider-thumb {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    transition: color 0.3s ease;
+    transition: color 0.3s ease-in-out;
     width: 18px;
     z-index: 10;
 }
@@ -728,7 +808,7 @@ input[type=range]::-webkit-slider-thumb {
     pointer-events: none;
     position: absolute;
     top: 15%;
-    transition: opacity 1.5s ease, --radius 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: opacity 1.5s ease-in-out, --radius 1.5s cubic-bezier(0.22, 1, 0.36, 1);
     width: 100%;
     z-index: 10;
 }

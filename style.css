@@ -144,7 +144,7 @@ a:not(header nav a):not(.card a):hover {
     justify-content: center;
     padding: 0.75rem;
     text-decoration: none;
-    transition: background-color 0.2s ease, transform 0.2s ease;
+    transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
 }
 
 .card-links .card-btn svg {
@@ -263,20 +263,20 @@ main {
     gap: 0.5rem;
     justify-content: center;
     padding: 0.75rem;
-    transition: background-color 0.2s ease, border-radius 0.2s ease;
+    transition: background-color 0.2s ease-in-out, border-radius 0.2s ease-in-out;
     user-select: none;
 }
 
 .preview-toggle svg {
     height: 20px;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease-in-out;
     width: 20px;
 }
 
 .preview-toggle.collapsed {
     border-bottom: 1px solid #ddd;
     border-radius: 6px;
-    transition: border-radius 0.4s ease;
+    transition: border-radius 0.4s ease-in-out;
 }
 
 .preview-toggle.collapsed {
@@ -296,7 +296,7 @@ main {
     background-color: white;
     display: grid;
     grid-template-rows: 0fr;
-    transition: grid-template-rows 0.4s ease-out;
+    transition: grid-template-rows 0.4s ease-in-out;
 }
 
 .preview-wrapper.open {
@@ -320,7 +320,7 @@ main {
     font-family: inherit;
     font-size: 0.9rem;
     padding: 0.8rem 1rem 0.8rem 2.5rem;
-    transition: border-color 0.3s ease, filter 0.3s ease;
+    transition: border-color 0.3s ease-in-out, filter 0.3s ease-in-out;
     width: 100%;
 }
 
@@ -352,7 +352,7 @@ main {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    transition: color 0.3s ease;
+    transition: color 0.3s ease-in-out;
     width: 20px;
     z-index: 10;
 }
@@ -378,14 +378,14 @@ main {
     gap: 0.5rem;
     justify-content: center;
     padding: 0.75rem;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
     user-select: none;
 }
 
 .switch-view-btn svg {
     color: #666;
     height: 16px;
-    transition: color 0.2s ease;
+    transition: color 0.2s ease-in-out;
     width: 16px;
 }
 
