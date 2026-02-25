@@ -229,16 +229,21 @@ const saveGame = () => {
 };
 
 const loadSession = () => {
-    const session = localStorage.getItem('wanted_current_session');
-    if (session) {
-        const data = JSON.parse(session);
-        score = data.score;
-        level = data.level;
-        timeLeft = data.timeLeft;
-        if(data.gameMode) {
-            settings.gameMode = data.gameMode;
+    try {
+        const session = localStorage.getItem('wanted_current_session');
+        if (session && session !== "undefined") {
+            const data = JSON.parse(session);
+            score = data.score || 0;
+            level = data.level || 1;
+            timeLeft = data.timeLeft || START_TIME;
+            if(data.gameMode) {
+                settings.gameMode = data.gameMode;
+            }
+            return true;
         }
-        return true;
+    } catch (e) {
+        console.error("Erreur lecture sauvegarde:", e);
+        localStorage.removeItem('wanted_current_session');
     }
     return false;
 };
