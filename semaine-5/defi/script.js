@@ -1,3 +1,6 @@
+const urlParams = new URLSearchParams(window.location.search);
+const isDebug = urlParams.get('debug') === 'true';
+
 const CHARACTERS = ['Mario', 'Luigi', 'Wario', 'Yoshi'];
 const START_TIME = 10;
 const TIME_BONUS = 5;
@@ -37,7 +40,8 @@ audio.music.loop = true;
 let settings = {
     musicVolume: 0.3,
     sfxVolume: 1.0,
-    gameMode: 'normal'
+    gameMode: 'normal',
+    menuMusic: false
 };
 audio.music.volume = settings.musicVolume;
 
@@ -48,6 +52,7 @@ let timerInterval = null;
 let currentTarget = '';
 let isPlaying = false;
 let isPaused = false;
+let lastSfxPlay = 0;
 
 let allRecords = [];
 let sortState = { column: 'score', direction: 'desc' };
@@ -88,8 +93,11 @@ const leaderboardModal = document.getElementById('leaderboard-modal');
 const leaderboardBtn = document.getElementById('leaderboard-btn');
 const closeLeaderboardBtn = document.getElementById('close-leaderboard');
 
+const menuMusicCheck = document.getElementById('menu-music-check');
 const musicSlider = document.getElementById('music-slider');
 const sfxSlider = document.getElementById('sfx-slider');
+
+const varCSS = getComputedStyle(document.documentElement);
 
 timerEl.textContent = START_TIME;
 
@@ -99,9 +107,13 @@ function togglePause(pauseState) {
     isPaused = pauseState;
     
     if (isPaused) {
-        audio.music.pause();
+        if (settings.musicVolume > 0) {
+            fadeAudioTo(settings.musicVolume * 0.3, 500);
+        }
     } else {
-        if (settings.musicVolume > 0) audio.music.play().catch(() => {});
+        if (settings.musicVolume > 0) {
+            fadeAudioTo(settings.musicVolume, 500);
+        }
     }
 }
 
@@ -110,9 +122,9 @@ function openModal(modal) {
     
     if (modal === settingsModal) {
         if (isPlaying) {
-            quitGameBtn.style.display = 'block';
+            quitGameBtn.classList.remove('hidden');
         } else {
-            quitGameBtn.style.display = 'none';
+            quitGameBtn.classList.add('hidden');
         }
     }
 
@@ -124,8 +136,10 @@ function openModal(modal) {
 
 function closeModal(modal) {
     const visibleModals = document.querySelectorAll('.modal.visible').length;
+    
+    const isGameplayActive = isPlaying && overlayScreen.classList.contains('hidden');
 
-    if (visibleModals === 1 && isPlaying) {
+    if (visibleModals === 1 && isGameplayActive && !isDebug) {
         countdownOverlay.classList.remove('hidden');
         countdownOverlay.textContent = '3';
     }
@@ -139,8 +153,12 @@ function closeModal(modal) {
            const anyVisible = document.querySelectorAll('.modal.visible').length > 0;
            
            if (!anyVisible) {
-               if (isPlaying) {
-                   startResumeCountdown();
+               if (isGameplayActive) {
+                   if (isDebug) {
+                       togglePause(false);
+                   } else {
+                       startResumeCountdown();
+                   }
                } else {
                    togglePause(false);
                }
@@ -149,7 +167,7 @@ function closeModal(modal) {
     }, 300);
 }
 
-function startResumeCountdown() {
+function startResumeCountdown(onCompleteCallback = null) {
     let count = 3;
     countdownOverlay.classList.remove('hidden');
     countdownOverlay.textContent = count;
@@ -160,8 +178,17 @@ function startResumeCountdown() {
             countdownOverlay.textContent = count;
         } else {
             clearInterval(countInt);
-            countdownOverlay.classList.add('hidden');
-            togglePause(false);
+            countdownOverlay.textContent = "GO!";
+            
+            setTimeout(() => {
+                countdownOverlay.classList.add('hidden');
+                
+                if (onCompleteCallback) {
+                    onCompleteCallback();
+                } else {
+                    togglePause(false);
+                }
+            }, 500); 
         }
     }, 1000);
 }
@@ -178,16 +205,98 @@ closeLeaderboardBtn.addEventListener('click', () => closeModal(leaderboardModal)
     });
 });
 
+let audioTransitionInterval = null;
+
+function fadeAudioTo(targetVolume, duration = 500, callback = null) {
+    if (audioTransitionInterval) clearInterval(audioTransitionInterval);
+    
+    if (audio.music.paused && targetVolume > 0) {
+        audio.music.volume = 0;
+        audio.music.play().catch(() => {});
+    }
+
+    const startVolume = audio.music.volume;
+    const startTime = Date.now();
+
+    audioTransitionInterval = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1); 
+
+        audio.music.volume = startVolume + (targetVolume - startVolume) * progress;
+
+        if (progress >= 1) {
+            clearInterval(audioTransitionInterval);
+            audio.music.volume = targetVolume;
+            if (callback) callback();
+        }
+    }, 20);
+}
+
 musicSlider.addEventListener('input', (e) => {
-    settings.musicVolume = parseFloat(e.target.value);
-    audio.music.volume = settings.musicVolume;
-    document.getElementById('music-val').textContent = Math.round(settings.musicVolume * 100) + '%';
+    const val = parseFloat(e.target.value);
+    settings.musicVolume = val;
+    document.getElementById('music-val').textContent = Math.round(val * 100) + '%';
+    
+    fadeAudioTo(val);
+    saveSettings();
+});
+
+menuMusicCheck.addEventListener('change', (e) => {
+    settings.menuMusic = e.target.checked;
+    saveSettings();
+
+    if (settings.menuMusic) {
+        if (settings.musicVolume > 0) {
+            const targetVol = (!isPlaying || isPaused) ? settings.musicVolume * 0.3 : settings.musicVolume;
+            fadeAudioTo(targetVol, 2000); 
+        }
+    } else {
+        fadeAudioTo(0, 2000, () => {
+            audio.music.pause();
+        });
+    }
 });
 
 sfxSlider.addEventListener('input', (e) => {
-    settings.sfxVolume = parseFloat(e.target.value);
-    document.getElementById('sfx-val').textContent = Math.round(settings.sfxVolume * 100) + '%';
+    const val = parseFloat(e.target.value);
+    settings.sfxVolume = val;
+    document.getElementById('sfx-val').textContent = Math.round(val * 100) + '%';
+    
+    const now = Date.now();
+    if (now - lastSfxPlay > 150) {
+        const testSound = audio.caught[0].cloneNode(); 
+        testSound.volume = val;
+        testSound.play().catch(() => {});
+        lastSfxPlay = now;
+    }
+    saveSettings();
 });
+
+const saveSettings = () => {
+    localStorage.setItem('wanted_settings', JSON.stringify(settings));
+};
+
+const loadSettings = () => {
+    const saved = localStorage.getItem('wanted_settings');
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved);
+            settings = { ...settings, ...parsed };
+            
+            musicSlider.value = settings.musicVolume;
+            document.getElementById('music-val').textContent = Math.round(settings.musicVolume * 100) + '%';
+            
+            sfxSlider.value = settings.sfxVolume;
+            document.getElementById('sfx-val').textContent = Math.round(settings.sfxVolume * 100) + '%';
+            
+            menuMusicCheck.checked = settings.menuMusic;
+            
+            audio.music.volume = settings.musicVolume;
+        } catch (e) {
+            console.error("Erreur chargement paramètres", e);
+        }
+    }
+};
 
 if(quitGameBtn) {
     quitGameBtn.addEventListener('click', () => {
@@ -208,7 +317,13 @@ function quitGame() {
     
     localStorage.removeItem('wanted_current_session');
     
-    audio.music.pause();
+    if (!settings.menuMusic) {
+        audio.music.pause();
+    } else {
+        if (audio.music.paused && settings.musicVolume > 0) {
+            audio.music.play().catch(()=>{});
+        }
+    }
     
     uiBar.classList.add('hidden');
     board.innerHTML = '';
@@ -384,7 +499,7 @@ function renderTable(data) {
         
         let pseudoHtml = record.pseudo;
         if (record.proof && record.proof.trim() !== "") {
-            pseudoHtml += ` <a href="${record.proof}" target="_blank" class="proof-link"><i data-lucide="external-link" style="width:14px;height:14px;"></i></a>`;
+            pseudoHtml += ` <a href="${record.proof}" target="_blank" class="proof-link"><i data-lucide="external-link" class="external-link-icon"></i></a>`;
         }
 
         let modeClass = 'mode-normal';
@@ -509,45 +624,53 @@ function startGame(isResume = false) {
     }
 
     bestScoreDisplay.classList.add('hidden');
-    
-    isPlaying = true;
-    isPaused = false;
-
     uiBar.classList.remove('hidden');
     scoreEl.textContent = score;
     timerEl.textContent = timeLeft;
-    
     overlayScreen.classList.add('hidden');
-    
     document.querySelector('.top-buttons').style.display = 'flex';
     
     isUserTouching = false; 
-    
     autoLight.x = window.innerWidth / 2;
     autoLight.y = window.innerHeight / 2;
-    autoLight.dx = (Math.random() < 0.5 ? -1 : 1) * 4;
-    autoLight.dy = (Math.random() < 0.5 ? -1 : 1) * 4;
     
+    startLevel();
+
     audio.music.currentTime = 0;
     if(settings.musicVolume > 0) {
         audio.music.play().catch(() => {});
     }
 
-    startLevel();
-    gameLoop();
-    
-    if (timerInterval) clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-        if (isPaused) return;
-
-        timeLeft--;
-        timerEl.textContent = timeLeft;
-        timerEl.style.color = timeLeft <= 5 ? '#ff5454' : '#00d512';
+    startResumeCountdown(() => {
+        isPlaying = true;
+        isPaused = false;
         
-        saveGame();
+        gameLoop();
+        
+        if (timerInterval) clearInterval(timerInterval);
 
-        if (timeLeft <= 0) gameOver();
-    }, 1000);
+        if (isDebug) {
+            timerEl.textContent = "∞";
+            timerEl.classList.add('timer-debug');
+        } else {
+            timerInterval = setInterval(() => {
+                if (isPaused) return;
+
+                timerEl.classList.remove('timer-normal', 'timer-danger');
+                timeLeft--;
+                timerEl.textContent = timeLeft;
+
+                if (timeLeft <= 5) {
+                    timerEl.classList.add('timer-danger');
+                } else {
+                    timerEl.classList.add('timer-normal');
+                }
+
+                if (timeLeft <= 0) gameOver();
+                saveGame();
+            }, 1000);
+        }
+    });
 }
 
 function startLevel() {
@@ -736,7 +859,9 @@ function handleCharacterClick(e) {
         timeLeft = Math.min(timeLeft + TIME_BONUS, 30);
         
         timerEl.textContent = timeLeft;
-        timerEl.style.color = timeLeft <= 5 ? '#ff5454' : '#00d512';
+        timerEl.classList.remove('timer-danger', 'timer-normal');
+        if(timeLeft <= 5) timerEl.classList.add('timer-danger');
+        else timerEl.classList.add('timer-normal');
 
         level++;
         saveGame();
@@ -744,16 +869,20 @@ function handleCharacterClick(e) {
     } else {
         audio.wrong.volume = settings.sfxVolume;
         audio.wrong.play().catch(()=>{});
-        
-        timeLeft = Math.max(0, timeLeft - 3);
-        
-        timerEl.textContent = timeLeft;
-        timerEl.style.color = timeLeft <= 5 ? '#ff5454' : '#00d512';
+
+        if (!isDebug) {
+            timeLeft = Math.max(0, timeLeft - 3);
+            
+            timerEl.textContent = timeLeft;
+            timerEl.classList.remove('timer-danger', 'timer-normal');
+            if(timeLeft <= 5) timerEl.classList.add('timer-danger');
+            else timerEl.classList.add('timer-normal');
+            
+            if (timeLeft <= 0) gameOver();
+        }
 
         timerEl.classList.add('shake');
         setTimeout(() => timerEl.classList.remove('shake'), 200);
-        
-        if (timeLeft <= 0) gameOver();
     }
 }
 
@@ -808,27 +937,22 @@ function initStartScreen() {
 
         const diffContainer = document.createElement('div');
         diffContainer.className = 'difficulty-start-container';
-        diffContainer.style.display = 'flex';
-        diffContainer.style.flexDirection = 'column';
-        diffContainer.style.gap = '20px';
-        diffContainer.style.marginTop = '20px';
 
         const label = document.createElement('p');
         label.textContent = "CHOISIS TA DIFFICULTÉ :";
-        label.style.fontSize = '1.5rem';
-        label.style.marginBottom = '5px';
+        label.className = 'difficulty-label';
         diffContainer.appendChild(label);
 
         const modes = [
-            { id: 'simple', label: 'SIMPLE', class: 'mode-simple' },
-            { id: 'normal', label: 'NORMAL', class: 'mode-normal' },
-            { id: 'hard', label: 'DIFFICILE', class: 'mode-hard' }
+            { id: 'simple', label: 'SIMPLE' },
+            { id: 'normal', label: 'NORMAL' },
+            { id: 'hard', label: 'DIFFICILE' }
         ];
 
         modes.forEach(m => {
             const btn = document.createElement('button');
             btn.textContent = m.label;
-            btn.style.width = '200px'; 
+            
             btn.onclick = () => {
                 settings.gameMode = m.id;
                 startGame(false);
@@ -841,8 +965,9 @@ function initStartScreen() {
 }
 
 window.onload = () => {
-    const best = localStorage.getItem('wanted_best_score') || 0;
+    loadSettings();
 
+    const best = localStorage.getItem('wanted_best_score') || 0;
     if (best > 0) {
         bestScoreDisplay.textContent = `Record : ${best}`;
         bestScoreDisplay.classList.remove('hidden');
@@ -853,7 +978,32 @@ window.onload = () => {
     const hasSession = loadSession();
     if (hasSession) {
         document.getElementById('overlay-desc').textContent = `Niveau ${level} - Score ${score}`;
-    } else {
+    }
+
+    if (settings.menuMusic && settings.musicVolume > 0) {
+        const targetVol = settings.musicVolume * 0.3;
+        
+        audio.music.volume = 0; 
+
+        const playPromise = audio.music.play();
+
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                fadeAudioTo(targetVol, 2000);
+            }).catch(error => {
+                console.log("Autoplay bloqué par le navigateur. Attente d'interaction...");
+                const unlockAudio = () => {
+                    audio.music.play().then(() => {
+                        fadeAudioTo(targetVol, 2000);
+                    });
+                    document.removeEventListener('click', unlockAudio);
+                    document.removeEventListener('touchstart', unlockAudio);
+                };
+
+                document.addEventListener('click', unlockAudio, { once: true });
+                document.addEventListener('touchstart', unlockAudio, { once: true });
+            });
+        }
     }
 
     initStartScreen();
