@@ -656,7 +656,15 @@ input[type=range]::-webkit-slider-runnable-track {
 .mode-hard { background: var(--col-diff-hard); color: white; }
 
 .hidden { display: none !important; }
-.hide-cursor #game-board, .hide-cursor .character { cursor: none !important; }
+.hide-cursor #game-board, .hide-cursor .character { 
+    cursor: none !important;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
 
 #countdown-overlay {
     position: absolute;
@@ -703,10 +711,19 @@ input[type=range]::-webkit-slider-runnable-track {
 }
 
 @media (max-width: 480px) {
-    .message-box h1 { font-size: 4rem; margin-bottom: 20px; }
-    .message-box p { font-size: 1.5rem; max-width: 90%; }
+    .score-box, .timer-box { font-size: 1.5rem; padding: 5px; }
+    .board { padding: 10px; gap: 5px; }
+    .character { max-width: 45px; }
+    .settings-btn { width: 40px; height: 40px; }
+    table { font-size: 0.8rem; }
+    th, td { padding: 4px; }
+    .message-box h1 { font-size: 3rem; margin-bottom: 20px; letter-spacing: 4px; }
+    .message-box p { font-size: 1.2rem; max-width: 90%; }
     .table-wrapper { max-height: 250px; }
     .message-box { justify-content: flex-start; gap: 15px; }
-    .button-group { flex-direction: column; }
-    #leaderboard-modal .modal-content { width: 100% !important; }
+    .button-group { flex-direction: column; margin-top: 0px; }
+    #leaderboard-modal .modal-content { width: 95% !important; max-width: 95%; padding: 15px; }
+    .best-score-badge { margin-bottom: 60px; }
+    button { padding: 8px 20px; font-size: 1.2rem; }
+    .difficulty-start-container button { width: 95% !important; padding: 8px 20px !important; }
 }
