@@ -49,16 +49,16 @@
                 <span>TEMPS</span>
                 <span id="timer"></span> 
             </div>
+
+            <div class="top-buttons">
+                <button id="leaderboard-btn" class="settings-btn" title="Classement">
+                    <i data-lucide="trophy"></i>
+                </button>
+                <button id="settings-btn" class="settings-btn" title="Paramètres">
+                    <i data-lucide="settings"></i>
+                </button>
+            </div>
         </header>
-        
-        <div class="top-buttons">
-            <button id="leaderboard-btn" class="settings-btn" title="Classement">
-                <i data-lucide="trophy"></i>
-            </button>
-            <button id="settings-btn" class="settings-btn" title="Paramètres">
-                <i data-lucide="settings"></i>
-            </button>
-        </div>
 
         <main id="game-board" class="board"></main>
 
@@ -151,6 +151,18 @@
                 </div>
 
                 <button id="close-settings">FERMER</button>
+            </div>
+        </div>
+
+        <div id="confirm-modal" class="modal hidden">
+            <div class="modal-content">
+                <h1>CONFIRMATION</h1>
+                <p id="confirm-msg">Êtes-vous sûr ?</p>
+                
+                <div class="button-group" style="justify-content: center; margin-top: 20px;">
+                    <button id="confirm-yes">OUI</button>
+                    <button id="confirm-no">NON</button>
+                </div>
             </div>
         </div>
     </div>

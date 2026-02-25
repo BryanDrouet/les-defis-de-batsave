@@ -634,7 +634,7 @@ function startGame(isResume = false) {
     autoLight.x = window.innerWidth / 2;
     autoLight.y = window.innerHeight / 2;
     
-    startLevel();
+    startLevel(false); 
 
     audio.music.currentTime = 0;
     if(settings.musicVolume > 0) {
@@ -673,7 +673,7 @@ function startGame(isResume = false) {
     });
 }
 
-function startLevel() {
+function startLevel(animate = true) {
     board.innerHTML = '';
     movingCharacters = []; 
 
@@ -795,7 +795,6 @@ function startLevel() {
         }
 
         if (level >= CHAOS_MODE_LEVEL) {
-            img.style.opacity = '0';
             img.style.position = 'absolute';
             img.style.width = '60px';
             img.style.height = '60px';
@@ -831,13 +830,20 @@ function startLevel() {
             img.style.top = '0px';
             img.style.transform = `translate3d(${startX}px, ${startY}px, 0)`; 
             
-            requestAnimationFrame(() => {
-                img.style.transition = 'opacity 0.2s ease-out';
+            if (animate) {
+                img.style.opacity = '0';
+                requestAnimationFrame(() => {
+                    img.style.transition = 'opacity 0.2s ease-out';
+                    img.style.opacity = '1';
+                });
+            } else {
                 img.style.opacity = '1';
-            });
+            }
 
         } else {
-            img.style.animation = 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            if (animate) {
+                img.style.animation = 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            }
         }
 
         img.addEventListener('pointerdown', handleCharacterClick);
@@ -865,7 +871,8 @@ function handleCharacterClick(e) {
 
         level++;
         saveGame();
-        startLevel();
+        
+        startLevel(true); 
     } else {
         audio.wrong.volume = settings.sfxVolume;
         audio.wrong.play().catch(()=>{});
@@ -963,6 +970,39 @@ function initStartScreen() {
         buttonGroup.insertBefore(diffContainer, startBtn);
     }
 }
+
+function preloadAssets() {
+    const imagesToLoad = [
+        'assets/img/background.png',
+        ...CHARACTERS.map(c => `assets/img/wanted${c}.png`),
+        ...CHARACTERS.map(c => `assets/img/sprite${c}.png`)
+    ];
+
+    const audioToLoad = [
+        'assets/audio/luigiWrong.wav',
+        'assets/audio/luigiTimeup.wav',
+        'assets/audio/music.wav',
+        'assets/audio/luigiCaught1.wav',
+        'assets/audio/luigiCaught2.wav',
+        'assets/audio/luigiCaught3.wav'
+    ];
+
+    imagesToLoad.forEach(src => {
+        const img = new Image();
+        img.src = src + '?v=' + Date.now(); 
+    });
+
+    audioToLoad.forEach(src => {
+        const audio = new Audio();
+        audio.src = src + '?v=' + Date.now();
+        audio.preload = 'auto';
+        audio.load();
+    });
+    
+    console.log("Assets preloading started...");
+}
+
+preloadAssets();
 
 window.onload = () => {
     loadSettings();
