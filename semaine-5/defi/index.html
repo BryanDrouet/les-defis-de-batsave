@@ -33,6 +33,15 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
+    <div id="loading-screen">
+        <div class="loading-content">
+            <h1>CHARGEMENT</h1>
+            <div class="loading-spinner">
+                <i data-lucide="loader-2" class="spin-icon"></i>
+            </div>
+            <p id="loading-text">Récupération des données...</p>
+        </div>
+    </div>
 
     <div class="game-container">
         <div class="top-buttons">
@@ -60,8 +69,9 @@
             </div>
             </header>
 
-            <main id="game-board" class="board"></main>
-            <div id="shadow-overlay" class="hidden"></div>
+            <main id="game-board" class="board">
+                <div id="shadow-overlay" class="hidden"></div>
+            </main>
         </div>
 
         <div id="countdown-overlay" class="hidden"></div>
@@ -131,12 +141,12 @@
                                 <span class="checkbox-custom"></span>
                             </label>
 
-                            <div class="">
+                            <div class="parameters-slider">
                                 <label for="music-slider">Volume Musique <span id="music-val">30%</span></label>
                                 <input type="range" id="music-slider" min="0" max="1" step="0.01" value="0.3">
                             </div>
                             
-                            <div class="">
+                            <div class="parameters-slider">
                                 <label for="sfx-slider">Volume Effets (SFX) <span id="sfx-val">100%</span></label>
                                 <input type="range" id="sfx-slider" min="0" max="1" step="0.01" value="1">
                             </div>
@@ -154,7 +164,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="setting-group">
                     <button id="quit-game-btn" class="diff-btn mode-hard quit-game-btn hidden">ABANDONNER LA PARTIE</button>
                     <button id="close-settings" class="close-settings">FERMER</button>

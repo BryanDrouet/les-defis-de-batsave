@@ -413,33 +413,25 @@ const updateBestScore = () => {
 
 function setFlashlightPosition(x, y) {
     if (level >= DARK_MODE_LEVEL && isPlaying && !isPaused) {
-        const uiHeight = uiBar.offsetHeight;
         shadowOverlay.style.setProperty('--x', `${x}px`);
-        shadowOverlay.style.setProperty('--y', `${y - uiHeight}px`);
+        shadowOverlay.style.setProperty('--y', `${y}px`);
     }
 }
 
 function updateAutoLight() {
     if(isPaused) return;
 
-    const rect = container.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
+    const maxX = board.offsetWidth;
+    const maxY = board.offsetHeight;
 
     autoLight.x += autoLight.dx;
     autoLight.y += autoLight.dy;
 
-    if (autoLight.x <= 50 || autoLight.x >= width - 50) {
-        autoLight.dx *= -1;
-        autoLight.dy += (Math.random() - 0.5); 
-    }
-    if (autoLight.y <= 150 || autoLight.y >= height - 50) {
-        autoLight.dy *= -1;
-        autoLight.dx += (Math.random() - 0.5);
-    }
+    if (autoLight.x <= 50 || autoLight.x >= maxX - 50) autoLight.dx *= -1;
+    if (autoLight.y <= 50 || autoLight.y >= maxY - 50) autoLight.dy *= -1;
 
-    autoLight.x = Math.max(0, Math.min(autoLight.x, width));
-    autoLight.y = Math.max(0, Math.min(autoLight.y, height));
+    autoLight.x = Math.max(0, Math.min(autoLight.x, maxX));
+    autoLight.y = Math.max(0, Math.min(autoLight.y, maxY));
 
     setFlashlightPosition(autoLight.x, autoLight.y);
 }
@@ -582,14 +574,11 @@ function updateSortIcons() {
 }
 
 function updateLightPosition(e) {
-    const rect = container.getBoundingClientRect();
-    
+    const rect = board.getBoundingClientRect();
     autoLight.x = e.clientX - rect.left;
     autoLight.y = e.clientY - rect.top;
-    
     autoLight.x = Math.max(0, Math.min(autoLight.x, rect.width));
     autoLight.y = Math.max(0, Math.min(autoLight.y, rect.height));
-
     setFlashlightPosition(autoLight.x, autoLight.y);
 }
 
@@ -600,9 +589,9 @@ const handleInteractionEnd = (e) => {
 
     if (isUserTouching) {
         isUserTouching = false;
-        const rect = container.getBoundingClientRect();
+        const rect = board.getBoundingClientRect();
         autoLight.x = Math.max(60, Math.min(rect.width - 60, autoLight.x));
-        autoLight.y = Math.max(160, Math.min(rect.height - 60, autoLight.y));
+        autoLight.y = Math.max(60, Math.min(rect.height - 60, autoLight.y));
         autoLight.dx = (Math.random() < 0.5 ? -1 : 1) * (3 + Math.random() * 3);
         autoLight.dy = (Math.random() < 0.5 ? -1 : 1) * (3 + Math.random() * 3);
     }
@@ -637,30 +626,39 @@ function gameLoop() {
 }
 
 function moveCharacters() {
-    const boardRect = board.getBoundingClientRect();
-    const maxX = boardRect.width;
-    const maxY = boardRect.height;
+    const maxX = board.offsetWidth;
+    const maxY = board.offsetHeight;
 
     movingCharacters.forEach(char => {
         if (char.dx === 0 && char.dy === 0) return;
 
         char.x += char.dx;
         char.y += char.dy;
+        
+        const w = char.width || 60;
+        const h = char.height || 60;
 
         if (char.behavior === 'bounce') {
-            if (char.x <= 0 || char.x + char.width >= maxX) {
-                char.dx *= -1;
-                char.x = Math.max(0, Math.min(char.x, maxX - char.width));
+            if (char.x <= 0) {
+                char.x = 0;
+                char.dx = Math.abs(char.dx);
+            } else if (char.x + w >= maxX) {
+                char.x = maxX - w;
+                char.dx = -Math.abs(char.dx);
             }
-            if (char.y <= 0 || char.y + char.height >= maxY) {
-                char.dy *= -1;
-                char.y = Math.max(0, Math.min(char.y, maxY - char.height));
+
+            if (char.y <= 0) {
+                char.y = 0;
+                char.dy = Math.abs(char.dy);
+            } else if (char.y + h >= maxY) {
+                char.y = maxY - h;
+                char.dy = -Math.abs(char.dy);
             }
         } else {
-            if (char.x > maxX) char.x = -char.width;
-            else if (char.x < -char.width) char.x = maxX;
-            if (char.y > maxY) char.y = -char.height;
-            else if (char.y < -char.height) char.y = maxY;
+            if (char.x > maxX) char.x = -w;
+            else if (char.x < -w) char.x = maxX;
+            if (char.y > maxY) char.y = -h;
+            else if (char.y < -h) char.y = maxY;
         }
 
         char.el.style.transform = `translate3d(${char.x}px, ${char.y}px, 0)`;
@@ -737,9 +735,10 @@ function startGame(isResume = false) {
 function startLevel(animate = true) {
     isTransitioning = false;
     board.innerHTML = '';
+    board.appendChild(shadowOverlay);
     movingCharacters = []; 
 
-    targetImg.classList.remove('pop-out');
+    targetImg.classList.remove('fade-out-anim');
     
     currentTarget = CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)];
     targetImg.src = `assets/img/wanted${currentTarget}.png`;
@@ -747,7 +746,7 @@ function startLevel(animate = true) {
     if(animate) {
         targetImg.style.animation = 'none';
         targetImg.offsetHeight;
-        targetImg.style.animation = 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        targetImg.style.animation = 'fadeInAnim 0.3s ease-in-out';
     }
 
     let totalCharacters;
@@ -798,11 +797,15 @@ function startLevel(animate = true) {
         board.style.gridTemplateRows = 'none';
     } else {
         board.style.display = 'grid';
+        board.style.position = 'relative';
+        board.style.width = '100%';
+        board.style.height = '100%';
+        
         let cols = Math.ceil(Math.sqrt(totalCharacters));
-        let rows = Math.ceil(totalCharacters / cols);
-        totalCharacters = cols * rows;
-        board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-        board.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+        board.style.gridTemplateColumns = `repeat(${cols}, minmax(60px, 1fr))`;
+        board.style.gridTemplateRows = `repeat(${cols}, minmax(60px, 1fr))`;
+        
+        totalCharacters = cols * cols; 
     }
     
     if (level >= DARK_MODE_LEVEL) {
@@ -847,12 +850,19 @@ function startLevel(animate = true) {
             wrapper.classList.add('char-wrapper');
             if(img.dataset.type) wrapper.dataset.type = img.dataset.type;
             if(img.classList.contains('target')) wrapper.classList.add('target');
-
-            const padding = 10;
-            const charSize = 60;
             
-            const startX = Math.random() * (bWidth - charSize);
-            const startY = Math.random() * (bHeight - charSize);
+            wrapper.appendChild(img);
+            wrapper.addEventListener('pointerdown', handleCharacterClick);
+            board.appendChild(wrapper);
+
+            const charWidth = wrapper.offsetWidth || 60;
+            const charHeight = wrapper.offsetHeight || 60;
+            
+            const safeMaxX = Math.max(0, bWidth - charWidth);
+            const safeMaxY = Math.max(0, bHeight - charHeight);
+            
+            const startX = Math.random() * safeMaxX;
+            const startY = Math.random() * safeMaxY;
             
             let dirX = 0; let dirY = 0;
             if (!isStatic) {
@@ -866,8 +876,8 @@ function startLevel(animate = true) {
                 y: startY,
                 dx: dirX,
                 dy: dirY,
-                width: 60,
-                height: 60,
+                width: charWidth,
+                height: charHeight,
                 behavior: levelBehavior
             });
 
@@ -876,14 +886,10 @@ function startLevel(animate = true) {
             wrapper.style.transform = `translate3d(${startX}px, ${startY}px, 0)`;
             
             if (animate) img.style.animation = 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-            
-            wrapper.appendChild(img);
-            wrapper.addEventListener('pointerdown', handleCharacterClick);
-            board.appendChild(wrapper);
         } else {
-            if (animate) img.style.animation = 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
             img.addEventListener('pointerdown', handleCharacterClick);
             board.appendChild(img);
+            if (animate) img.style.animation = 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
         }
     }
 }
@@ -1023,6 +1029,8 @@ function initStartScreen() {
 }
 
 function preloadAssets() {
+    const loadingText = document.getElementById('loading-text');
+    
     const imagesToLoad = [
         'assets/img/background.png',
         ...CHARACTERS.map(c => `assets/img/wanted${c}.png`),
@@ -1038,54 +1046,65 @@ function preloadAssets() {
         'assets/audio/luigiCaught3.wav'
     ];
 
+    const promises = [];
+
     imagesToLoad.forEach(src => {
-        const img = new Image();
-        img.src = src + '?v=' + Date.now(); 
+        promises.push(new Promise((resolve) => {
+            const img = new Image();
+            img.onload = resolve;
+            img.onerror = resolve;
+            img.src = src + '?v=' + Date.now();
+        }));
     });
 
     audioToLoad.forEach(src => {
-        const audio = new Audio();
-        audio.src = src + '?v=' + Date.now();
-        audio.preload = 'auto';
-        audio.load();
+        promises.push(new Promise((resolve) => {
+            const aud = new Audio();
+            aud.oncanplaythrough = resolve;
+            aud.onerror = resolve;
+            setTimeout(resolve, 2000); 
+            aud.src = src + '?v=' + Date.now();
+            aud.preload = 'auto';
+            aud.load();
+        }));
     });
     
-    console.log("Assets preloading started...");
+    if(loadingText) loadingText.textContent = "Chargement des assets...";
+    console.log("Début du chargement...");
+
+    return Promise.all(promises);
 }
 
-preloadAssets();
+window.onload = async () => {
+    if (window.lucide) lucide.createIcons();
 
-window.onload = () => {
     loadSettings();
-
-    const best = parseInt(localStorage.getItem('wanted_best_score')) || 0;
+    const hasSession = loadSession();
     
+    const best = parseInt(localStorage.getItem('wanted_best_score')) || 0;
     if (best > 0) {
         bestScoreDisplay.textContent = `Record : ${best}`;
     } else {
         bestScoreDisplay.textContent = "Aucun record";
     }
 
-    const hasSession = loadSession();
     if (hasSession) {
         document.getElementById('overlay-desc').textContent = `Niveau ${level} - Score ${score}`;
     }
 
+    await preloadAssets();
+
     if (settings.menuMusic && settings.musicVolume > 0) {
         const targetVol = settings.musicVolume * 0.3;
         audio.music.volume = 0; 
-
         const playPromise = audio.music.play();
-
         if (playPromise !== undefined) {
             playPromise.then(() => {
                 fadeAudioTo(targetVol, 2000);
             }).catch(error => {
-                console.log("Autoplay bloqué. Attente d'interaction...");
+                console.log("Autoplay bloqué.");
                 const unlockAudio = () => {
-                    audio.music.play().then(() => {
-                        fadeAudioTo(targetVol, 2000);
-                    });
+                    audio.music.play().then(() => fadeAudioTo(targetVol, 2000));
                     document.removeEventListener('click', unlockAudio);
                     document.removeEventListener('touchstart', unlockAudio);
                 };
@@ -1096,6 +1115,14 @@ window.onload = () => {
     }
 
     initStartScreen();
+
+    const loader = document.getElementById('loading-screen');
+    if(loader) {
+        loader.classList.add('fade-out');
+        setTimeout(() => {
+            loader.remove();
+        }, 500);
+    }
 };
 
 startBtn.addEventListener('click', () => {
@@ -1153,7 +1180,7 @@ function transitionToNextLevel() {
     const elements = document.querySelectorAll('.char-wrapper, .character:not(.char-wrapper .character)');
     
     const wantedPoster = document.getElementById('target-img');
-    if(wantedPoster) wantedPoster.classList.add('pop-out');
+    if(wantedPoster) wantedPoster.classList.add('fade-out-anim');
 
     elements.forEach(el => {
         const img = el.tagName === 'IMG' ? el : el.querySelector('img');
