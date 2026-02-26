@@ -7,29 +7,29 @@
 
 @media (max-width: 480px) {
     .mechanics {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
     }
 
     .poster-container {
-        flex-direction: column;
-        gap: 30px;
+        flex-direction: column !important;
+        gap: 30px !important;
     }
 
     .progress-header strong svg {
-        display: none;
+        display: none !important;
     }
 
     .wanted-poster {
-        height: 160px;
+        height: 160px !important;
     }
 
     .progress-footer {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: column !important;
+        align-items: flex-start !important;
     }
 
     .progress-footer * {
-        text-align: left;
+        text-align: left !important;
     }
 }
 

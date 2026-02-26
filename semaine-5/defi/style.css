@@ -16,7 +16,7 @@
     }
 
     .game-running .top-buttons {
-        top: 140px; 
+        top: 140px !important; 
     }
 
     .score-box, .timer-box {

@@ -7,30 +7,30 @@
 
 @media (max-width: 650px) {
     .card {
-        width: 100%;
+        width: 100% !important;
     }
 
     .search-bar {
-        max-width: 90%;
+        max-width: 90% !important;
     }
 
     .card-links {
-        flex-direction: column;
+        flex-direction: column !important;
     }
 
     .card-links .card-btn:first-child {
-        border-radius: 0;
-        border: 1px solid #ddd;
-        border-bottom: 0;
+        border-radius: 0 !important;
+        border: 1px solid #ddd !important;
+        border-bottom: 0 !important;
     }
 
     .card-links .card-btn.play-btn {
-        border-radius: 0 0 8px 8px;
-        border: 1px solid #ddd;
+        border-radius: 0 0 8px 8px !important;
+        border: 1px solid #ddd !important;
     }
 
     .preview-toggle.collapsed {
-        border: 1px solid #ddd;
+        border: 1px solid #ddd !important;
     }
 }
 

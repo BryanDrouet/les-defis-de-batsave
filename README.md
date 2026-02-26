@@ -36,4 +36,4 @@ Si vous ne venez pas de ce serveur Discord, voici une petite explication du conc
 ### 📂 Mes participations
 Retrouvez ci-dessous les différents projets que j'ai réalisés dans le cadre de ces défis :
 
-* **Semaine 5** - *La lumière contre l’ombre* | [Lien vers le code source](https://github.com/BryanDrouet/les-defis-de-batsave/tree/main/Semaine%205%20-%20La%20lumi%C3%A8re%20contre%20l%E2%80%99ombre) | [Lien vers le défi](https://bryandrouet.github.io/les-defis-de-batsave/Semaine%205%20-%20La%20lumi%C3%A8re%20contre%20l%E2%80%99ombre/)
+* **Semaine 5** - *La lumière contre l’ombre* | [Lien vers le code source](https://github.com/BryanDrouet/les-defis-de-batsave/tree/main/semaine-5) | [Lien vers le défi](https://defis-batsave.bryan.ovh/semaine-5/defi/)
