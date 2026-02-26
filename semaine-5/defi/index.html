@@ -35,6 +35,15 @@
 <body>
 
     <div class="game-container">
+        <div class="top-buttons">
+            <button id="leaderboard-btn" class="settings-btn" title="Classement">
+                <i data-lucide="trophy"></i>
+            </button>
+            <button id="settings-btn" class="settings-btn" title="Paramètres">
+                <i data-lucide="settings"></i>
+            </button>
+        </div>
+
         <header class="ui-bar hidden">
             <div class="score-box">
                 <span>SCORE</span>
@@ -49,27 +58,18 @@
                 <span>TEMPS</span>
                 <span id="timer"></span> 
             </div>
+            </header>
 
-            <div class="top-buttons">
-                <button id="leaderboard-btn" class="settings-btn" title="Classement">
-                    <i data-lucide="trophy"></i>
-                </button>
-                <button id="settings-btn" class="settings-btn" title="Paramètres">
-                    <i data-lucide="settings"></i>
-                </button>
-            </div>
-        </header>
+            <main id="game-board" class="board"></main>
+            <div id="shadow-overlay" class="hidden"></div>
+        </div>
 
-        <main id="game-board" class="board"></main>
-
-        <div id="shadow-overlay" class="hidden"></div>
-        
         <div id="countdown-overlay" class="hidden"></div>
 
         <div id="overlay-screen" class="overlay">
             <div class="message-box">
                 <div class="content-wrapper">
-                    <div id="best-score-display" class="best-score-badge hidden">Record : 0</div>
+                    <div id="best-score-display" class="best-score-badge">Aucun record</div>
                     <div class="title">
                         <h1 id="overlay-title">WANTED!</h1>
                         <p id="overlay-desc">Trouve le personnage affiché avant la fin du temps.</p>
@@ -126,7 +126,7 @@
 
                         <div class="parameters">
                             <label class="checkbox-label">
-                                <span>Musique (Menu/Titres)</span>
+                                <span>Musique dans les menus</span>
                                 <input type="checkbox" id="menu-music-check">
                                 <span class="checkbox-custom"></span>
                             </label>
@@ -142,26 +142,34 @@
                             </div>
                         </div>
                     </div>
+                    <span class="divider"></span>
+                    <div class="setting-group-other">
+                        <h2>Autres</h2>
+                        <div class="parameters">
+                            <label class="checkbox-label">
+                                <span>Mode Infini</span>
+                                <input type="checkbox" id="practice-mode-check">
+                                <span class="checkbox-custom"></span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="setting-group">
-                    <div class="setting-group-difficulty">
-                        <button id="quit-game-btn" class="diff-btn mode-hard hidden">ABANDONNER LA PARTIE</button>
-                    </div>
+                    <button id="quit-game-btn" class="diff-btn mode-hard quit-game-btn hidden">ABANDONNER LA PARTIE</button>
+                    <button id="close-settings" class="close-settings">FERMER</button>
                 </div>
-
-                <button id="close-settings">FERMER</button>
             </div>
         </div>
 
         <div id="confirm-modal" class="modal hidden">
             <div class="modal-content">
                 <h1>CONFIRMATION</h1>
-                <p id="confirm-msg">Êtes-vous sûr ?</p>
+                <p id="confirm-msg" class="confirm-msg">Êtes-vous sûr ?</p>
                 
-                <div class="button-group" style="justify-content: center; margin-top: 20px;">
-                    <button id="confirm-yes">OUI</button>
-                    <button id="confirm-no">NON</button>
+                <div class="button-modal-group">
+                    <button id="confirm-yes" class="diff-btn mode-hard quit-game-btn">OUI</button>
+                    <button id="confirm-no" class="close-settings">NON</button>
                 </div>
             </div>
         </div>

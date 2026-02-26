@@ -10,15 +10,21 @@
 
 @media (max-width: 480px) {
     .ui-bar {
+        position: relative !important;
+        top: 44px !important;
         padding: 0 5px !important;
+    }
+
+    .game-running .top-buttons {
+        top: 140px; 
     }
 
     .score-box, .timer-box {
         font-size: 1.5rem !important; 
-        padding: 5px !important;
     }
 
     .board {
+        top: 44px !important;
         padding: 10px !important;
         gap: 5px !important;
     }
@@ -74,16 +80,10 @@
         width: 90% !important;
     }
     
-    button {
-        max-width: 260px !important;
-        width: 95% !important;
-        padding: 8px 20px !important;
-    }
-    
     .top-buttons {
         top: 0 !important;
         right: 0 !important;
-        gap: 5px !important;
+        gap: 0 !important;
         width: 100% !important;
         justify-content: flex-end !important;
     }
@@ -95,21 +95,52 @@
     .legal-notice p {
         font-size: 0.7rem !important;
     }
+
+    .modal h1:first-child {
+        font-size: 2em !important;
+        padding-bottom: 10px !important;
+    }
 }
 
 @keyframes popIn {
-    0% {
-        transform: scale(0);
-        opacity: 0;
-    }
-    80% {
-        transform: scale(1.1);
-        opacity: 1;
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
+    0% { transform: scale(0); opacity: 0; }
+    80% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes popOut {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(0); opacity: 0; }
+}
+
+@keyframes flashGreen {
+    0%, 100% { filter: drop-shadow(0 0 0px transparent); transform: scale(1); }
+    50% { filter: drop-shadow(0 0 15px #00ff00) hue-rotate(90deg) brightness(1.5); transform: scale(1.2); }
+}
+
+@keyframes flashRed {
+    0%, 100% { filter: drop-shadow(0 0 0px transparent); transform: scale(1); }
+    25% { transform: translateX(-5px) scale(0.9); }
+    50% { filter: drop-shadow(0 0 15px #ff0000) saturate(50) brightness(0.8); transform: translateX(5px) scale(0.9); }
+    75% { transform: translateX(-5px) scale(0.9); }
+}
+
+@property --x {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 50%;
+}
+
+@property --y {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 50%;
+}
+
+@property --radius {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 200vmax;
 }
 
 :root {
@@ -288,15 +319,34 @@ button:hover {
     z-index: 1;
 }
 
+.character:hover {
+    transform: scale(1.05);
+}
+
 .character:active {
-    transform: scale(0.9);
+    transform: scale(0.95);
 }
 
 .character.target {
-    z-index: 9 !important;
+    z-index: 10 !important;
+}
+
+.char-wrapper {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    z-index: 1;
+    pointer-events: auto;
+}
+
+.char-wrapper .character {
+    position: static !important;
+    width: 100%;
+    height: 100%;
 }
 
 .checkbox-custom {
+    aspect-ratio: 1/1;
     background: var(--col-bg-main);
     border: 2px solid var(--col-red);
     box-shadow: inset 2px 2px 0 rgba(0,0,0,0.5);
@@ -304,6 +354,7 @@ button:hover {
     height: 24px;
     position: relative;
     width: 24px;
+    transition: background 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
 .checkbox-label {
@@ -322,9 +373,11 @@ button:hover {
 .checkbox-label input:checked + .checkbox-custom {
     background: var(--col-yellow);
     box-shadow: inset 2px 2px 0 var(--col-yellow-light);
+    transition: background 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
 .checkbox-label input:checked + .checkbox-custom::after {
+    transition: background 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
     background: var(--col-red);
     box-shadow: 
         2px 0 0 var(--col-red-dark),
@@ -338,7 +391,18 @@ button:hover {
 }
 
 #close-settings, #close-leaderboard {
+    width: 100% !important;
+}
+
+.button-modal-group {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
     margin-top: 20px;
+    flex-direction: column;
+}
+
+#confirm-yes {
     width: 100%;
 }
 
@@ -365,7 +429,7 @@ button:hover {
     justify-content: center;
     left: 0;
     opacity: 1;
-    pointer-events: none;
+    pointer-events: auto;
     position: absolute;
     text-shadow: 6px 6px 0 var(--col-red);
     top: 0;
@@ -381,6 +445,15 @@ button:hover {
     display: flex !important;
     opacity: 0;
     visibility: hidden;
+}
+
+#confirm-modal {
+    z-index: 300;
+}
+
+#confirm-modal .modal-content {
+    max-width: 400px;
+    border-color: var(--col-yellow);
 }
 
 .diff-btn {
@@ -444,6 +517,15 @@ button:hover {
     width: 14px;
 }
 
+.flash-correct {
+    animation: flashGreen 0.4s ease-in-out infinite !important;
+    z-index: 100 !important;
+}
+
+.flash-wrong {
+    animation: flashRed 0.4s ease-in-out !important;
+}
+
 .game-container {
     background-repeat: repeat;
     background: url('assets/img/background.png');
@@ -458,6 +540,10 @@ button:hover {
     padding-top: env(safe-area-inset-top);
     position: relative;
     width: 100%;
+}
+
+.game-running .top-buttons {
+    top: 140px;
 }
 
 h1, h2, h3, th, .ui-bar span:first-child, .score-box span:first-child, .timer-box span:first-child {
@@ -567,7 +653,7 @@ input[type=range]::-webkit-slider-thumb {
 }
 
 .message-box p {
-    font-size: 2rem;
+    font-size: 1.5rem;
     margin: 0;
     max-width: 600px;
 }
@@ -597,12 +683,22 @@ input[type=range]::-webkit-slider-thumb {
 .modal h1 {
     border-bottom: 4px solid var(--col-red);
     color: var(--col-text-highlight);
-    margin-top: 0;
-    padding-bottom: 10px;
     text-shadow: 2px 2px 0 var(--col-red-dark);
+    margin: 0;
+}
+
+.character.target, .char-wrapper.target {
+    z-index: 10 !important;
+}
+
+.modal h1:first-child {
+    padding-bottom: 25px;
+    font-size: 3em;
 }
 
 .modal-content {
+    display: flex;
+    flex-direction: column;
     background: var(--col-bg-modal);
     border: none;
     box-shadow: 
@@ -617,6 +713,7 @@ input[type=range]::-webkit-slider-thumb {
     position: relative;
     text-align: center;
     width: 90%;
+    gap: 20px;
 }
 
 .modal.hidden {
@@ -688,6 +785,11 @@ input[type=range]::-webkit-slider-thumb {
     color: #5dade2;
 }
 
+.pop-out {
+    animation: popOut 0.3s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards !important;
+    pointer-events: none;
+}
+
 #quit-game-btn {
     margin-top: 10px;
     width: 100%;
@@ -702,16 +804,16 @@ input[type=range]::-webkit-slider-thumb {
     display: flex;
     flex-direction: column;
     font-size: 2.5rem;
-    gap: 10px;
+    gap: 0;
     height: 100%;
     justify-content: center;
-    padding: 15px;
+    padding-top: 15px;
+    padding-bottom: 15px;
     text-align: center;
 }
 
 .search-container {
     flex: 1;
-    margin-bottom: 21px;
     min-width: 150px;
     position: relative;
 }
@@ -762,8 +864,17 @@ input[type=range]::-webkit-slider-thumb {
 }
 
 .setting-group {
-    margin-bottom: 25px;
+    display: flex;
+    flex-direction: column;
     text-align: left;
+    align-items: center;
+    gap: 20px;
+}
+
+.divider {
+    border-bottom: 3px solid var(--col-shadow);
+    color: var(--col-text-highlight);
+    width: 40% !important;
 }
 
 .setting-group h2 {
@@ -779,13 +890,14 @@ input[type=range]::-webkit-slider-thumb {
     margin-bottom: 5px;
 }
 
-.setting-group-audio {
+.setting-group-audio, .setting-group-other {
+    width: 100%;
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
 
-.setting-group-audio h2 {
+.setting-group-audio h2, .setting-group-other h2 {
     margin: 0;
 }
 
@@ -799,18 +911,26 @@ input[type=range]::-webkit-slider-thumb {
 #shadow-overlay {
     --opacity: 0;
     --radius: 200vmax;
-    -webkit-mask-image: radial-gradient(circle var(--radius) at var(--x, 50%) var(--y, 50%), transparent 0%, black 100%);
+    --x: 50%;
+    --y: 50%;
+    -webkit-mask-image: radial-gradient(circle var(--radius) at var(--x) var(--y), transparent 0%, black 100%);
+    mask-image: radial-gradient(circle var(--radius) at var(--x) var(--y), transparent 0%, black 100%);
+    
     background: black;
     height: 85%;
     left: 0;
-    mask-image: radial-gradient(circle var(--radius) at var(--x, 50%) var(--y, 50%), transparent 0%, black 100%);
     opacity: 0;
     pointer-events: none;
     position: absolute;
-    top: 15%;
-    transition: opacity 1.5s ease-in-out, --radius 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+    height: 100%;
     width: 100%;
     z-index: 10;
+    
+    transition: 
+        opacity 1.5s ease-in-out, 
+        --radius 1s cubic-bezier(0.22, 1, 0.36, 1),
+        --x 0.2s linear,
+        --y 0.2s linear;
 }
 
 #shadow-overlay.active {
@@ -850,6 +970,15 @@ table {
     height: 100%;
     width: auto;
     z-index: 1;
+    transition: transform 0.3s ease; 
+}
+
+.target-face.fade-swap {
+    opacity: 0;
+}
+
+.target-face.pop-out {
+    animation: popOut 0.3s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards !important;
 }
 
 td {
@@ -911,12 +1040,12 @@ th:hover {
 }
 
 .top-buttons {
-    align-items: center;
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 60;
+    gap: 20px;
     display: flex;
-    gap: 10px;
-    height: 100%;
-    position: static;
-    z-index: 50;
 }
 
 tr {
@@ -939,15 +1068,21 @@ tr:nth-child(even) {
 
 .ui-bar {
     align-items: center;
-    background: var(--col-bg-ui);
-    border-bottom: 4px solid var(--col-shadow);
+    background: var(--col-bg-modal);
+    border: none;
+    box-shadow:
+        inset 4px 4px 0px 0px var(--col-grey-blue),
+        inset -4px -4px 0px 0px var(--col-bg-main),
+        0 0 0 4px var(--col-red),
+        0 0 0 8px var(--col-red-dark),
+        0 10px 0px rgba(0, 0, 0, 0.5);
+    color: var(--col-white);
     display: flex;
     flex-shrink: 0;
     gap: 5px;
     height: 15%;
-    justify-content: space-between;
+    justify-content: space-evenly;
     min-height: 80px;
-    padding: 0 15px;
     position: relative;
     z-index: 20;
 }

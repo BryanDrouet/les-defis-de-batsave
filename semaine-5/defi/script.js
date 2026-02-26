@@ -41,7 +41,8 @@ let settings = {
     musicVolume: 0.3,
     sfxVolume: 1.0,
     gameMode: 'normal',
-    menuMusic: false
+    menuMusic: false,
+    practiceMode: false
 };
 audio.music.volume = settings.musicVolume;
 
@@ -53,6 +54,7 @@ let currentTarget = '';
 let isPlaying = false;
 let isPaused = false;
 let lastSfxPlay = 0;
+let isTransitioning = false;
 
 let allRecords = [];
 let sortState = { column: 'score', direction: 'desc' };
@@ -88,6 +90,7 @@ const settingsModal = document.getElementById('settings-modal');
 const settingsBtn = document.getElementById('settings-btn');
 const closeSettingsBtn = document.getElementById('close-settings');
 const quitGameBtn = document.getElementById('quit-game-btn');
+const practiceCheck = document.getElementById('practice-mode-check');
 
 const leaderboardModal = document.getElementById('leaderboard-modal');
 const leaderboardBtn = document.getElementById('leaderboard-btn');
@@ -136,10 +139,9 @@ function openModal(modal) {
 
 function closeModal(modal) {
     const visibleModals = document.querySelectorAll('.modal.visible').length;
-    
     const isGameplayActive = isPlaying && overlayScreen.classList.contains('hidden');
 
-    if (visibleModals === 1 && isGameplayActive && !isDebug) {
+    if (visibleModals === 1 && isGameplayActive && !settings.practiceMode) {
         countdownOverlay.classList.remove('hidden');
         countdownOverlay.textContent = '3';
     }
@@ -154,10 +156,10 @@ function closeModal(modal) {
            
            if (!anyVisible) {
                if (isGameplayActive) {
-                   if (isDebug) {
-                       togglePause(false);
-                   } else {
+                   if (!settings.practiceMode) {
                        startResumeCountdown();
+                   } else {
+                       togglePause(false);
                    }
                } else {
                    togglePause(false);
@@ -168,6 +170,16 @@ function closeModal(modal) {
 }
 
 function startResumeCountdown(onCompleteCallback = null) {
+    if (settings.practiceMode) {
+        countdownOverlay.classList.add('hidden');
+        if (onCompleteCallback) {
+            onCompleteCallback();
+        } else {
+            togglePause(false);
+        }
+        return;
+    }
+
     let count = 3;
     countdownOverlay.classList.remove('hidden');
     countdownOverlay.textContent = count;
@@ -291,6 +303,8 @@ const loadSettings = () => {
             
             menuMusicCheck.checked = settings.menuMusic;
             
+            if(practiceCheck) practiceCheck.checked = settings.practiceMode;
+
             audio.music.volume = settings.musicVolume;
         } catch (e) {
             console.error("Erreur chargement paramètres", e);
@@ -298,13 +312,22 @@ const loadSettings = () => {
     }
 };
 
-if(quitGameBtn) {
-    quitGameBtn.addEventListener('click', () => {
-        if(confirm("Voulez-vous vraiment abandonner la partie en cours ?")) {
-            settingsModal.classList.remove('visible');
-            setTimeout(() => settingsModal.classList.add('hidden'), 300);
-            
-            quitGame();
+if(practiceCheck) {
+    practiceCheck.addEventListener('change', (e) => {
+        settings.practiceMode = e.target.checked;
+        saveSettings();
+        
+        if(isPlaying) {
+            if(settings.practiceMode) {
+                timerEl.textContent = "∞";
+                timerEl.classList.add('timer-debug');
+                timerEl.classList.remove('timer-normal', 'timer-danger');
+            } else {
+                timerEl.textContent = timeLeft;
+                timerEl.classList.remove('timer-debug');
+                if(timeLeft <= 5) timerEl.classList.add('timer-danger');
+                else timerEl.classList.add('timer-normal');
+            }
         }
     });
 }
@@ -315,6 +338,8 @@ function quitGame() {
     cancelAnimationFrame(animationFrameId); 
     clearInterval(timerInterval);
     
+    document.body.classList.remove('game-running');
+
     localStorage.removeItem('wanted_current_session');
     
     if (!settings.menuMusic) {
@@ -332,6 +357,14 @@ function quitGame() {
     overlayTitle.textContent = "WANTED!";
     overlayDesc.textContent = "Trouve le personnage affiché avant la fin du temps.";
     
+    const best = parseInt(localStorage.getItem('wanted_best_score')) || 0;
+    if (best > 0) {
+        bestScoreDisplay.textContent = `Record : ${best}`;
+        bestScoreDisplay.classList.remove('hidden');
+    } else {
+        bestScoreDisplay.classList.add('hidden');
+    }
+
     overlayScreen.classList.remove('hidden');
     initStartScreen();
     
@@ -364,10 +397,17 @@ const loadSession = () => {
 };
 
 const updateBestScore = () => {
-    const best = localStorage.getItem('wanted_best_score') || 0;
+    let best = parseInt(localStorage.getItem('wanted_best_score')) || 0;
+    
     if (score > best) {
-        localStorage.setItem('wanted_best_score', score);
-        bestScoreDisplay.textContent = `Record : ${score}`;
+        best = score;
+        localStorage.setItem('wanted_best_score', best);
+    }
+    
+    if (best > 0) {
+        bestScoreDisplay.textContent = `Record : ${best}`;
+    } else {
+        bestScoreDisplay.textContent = "Aucun record";
     }
 };
 
@@ -543,8 +583,13 @@ function updateSortIcons() {
 
 function updateLightPosition(e) {
     const rect = container.getBoundingClientRect();
+    
     autoLight.x = e.clientX - rect.left;
     autoLight.y = e.clientY - rect.top;
+    
+    autoLight.x = Math.max(0, Math.min(autoLight.x, rect.width));
+    autoLight.y = Math.max(0, Math.min(autoLight.y, rect.height));
+
     setFlashlightPosition(autoLight.x, autoLight.y);
 }
 
@@ -563,9 +608,17 @@ const handleInteractionEnd = (e) => {
     }
 };
 
+document.removeEventListener('pointerup', handleInteractionEnd);
+document.removeEventListener('pointercancel', handleInteractionEnd);
+document.removeEventListener('pointerleave', handleInteractionEnd);
+uiBar.removeEventListener('mouseenter', handleInteractionEnd);
+uiBar.removeEventListener('pointerenter', handleInteractionEnd);
+
+container.addEventListener('pointerleave', handleInteractionEnd);
+container.addEventListener('mouseleave', handleInteractionEnd);
+
 document.addEventListener('pointerup', handleInteractionEnd);
 document.addEventListener('pointercancel', handleInteractionEnd);
-document.addEventListener('pointerleave', handleInteractionEnd);
 
 function gameLoop() {
     if (!isPlaying) return;
@@ -606,7 +659,6 @@ function moveCharacters() {
         } else {
             if (char.x > maxX) char.x = -char.width;
             else if (char.x < -char.width) char.x = maxX;
-            
             if (char.y > maxY) char.y = -char.height;
             else if (char.y < -char.height) char.y = maxY;
         }
@@ -623,10 +675,22 @@ function startGame(isResume = false) {
         localStorage.removeItem('wanted_current_session');
     }
 
+    document.body.classList.add('game-running');
+
     bestScoreDisplay.classList.add('hidden');
     uiBar.classList.remove('hidden');
     scoreEl.textContent = score;
-    timerEl.textContent = timeLeft;
+    
+    if (settings.practiceMode) {
+        timerEl.textContent = "∞";
+        timerEl.classList.add('timer-debug');
+        timerEl.classList.remove('timer-normal', 'timer-danger');
+    } else {
+        timerEl.textContent = timeLeft;
+        timerEl.classList.remove('timer-debug');
+        timerEl.classList.add('timer-normal');
+    }
+
     overlayScreen.classList.add('hidden');
     document.querySelector('.top-buttons').style.display = 'flex';
     
@@ -649,13 +713,10 @@ function startGame(isResume = false) {
         
         if (timerInterval) clearInterval(timerInterval);
 
-        if (isDebug) {
-            timerEl.textContent = "∞";
-            timerEl.classList.add('timer-debug');
-        } else {
-            timerInterval = setInterval(() => {
-                if (isPaused) return;
+        timerInterval = setInterval(() => {
+            if (isPaused) return;
 
+            if (!settings.practiceMode) {
                 timerEl.classList.remove('timer-normal', 'timer-danger');
                 timeLeft--;
                 timerEl.textContent = timeLeft;
@@ -667,15 +728,27 @@ function startGame(isResume = false) {
                 }
 
                 if (timeLeft <= 0) gameOver();
-                saveGame();
-            }, 1000);
-        }
+            }
+            saveGame();
+        }, 1000);
     });
 }
 
 function startLevel(animate = true) {
+    isTransitioning = false;
     board.innerHTML = '';
     movingCharacters = []; 
+
+    targetImg.classList.remove('pop-out');
+    
+    currentTarget = CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)];
+    targetImg.src = `assets/img/wanted${currentTarget}.png`;
+    
+    if(animate) {
+        targetImg.style.animation = 'none';
+        targetImg.offsetHeight;
+        targetImg.style.animation = 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+    }
 
     let totalCharacters;
     
@@ -691,11 +764,8 @@ function startLevel(animate = true) {
         if (level >= 15) totalCharacters = 36;
     }
 
-    if (settings.gameMode === 'simple') {
-        totalCharacters = Math.max(4, Math.floor(totalCharacters / 2));
-    } else if (settings.gameMode === 'hard') {
-        totalCharacters = Math.floor(totalCharacters * 1.5);
-    }
+    if (settings.gameMode === 'simple') totalCharacters = Math.max(4, Math.floor(totalCharacters / 2));
+    else if (settings.gameMode === 'hard') totalCharacters = Math.floor(totalCharacters * 1.5);
 
     let levelBehavior = 'bounce';
     let currentSpeed = 0;
@@ -708,47 +778,29 @@ function startLevel(animate = true) {
         levelBehavior = Math.random() < 0.5 ? 'bounce' : 'wrap';
         const speedProgress = Math.min((level - CHAOS_MODE_LEVEL) / (CHAOS_MAX_SPEED_LEVEL - CHAOS_MODE_LEVEL), 1);
         currentSpeed = MIN_SPEED + ((MAX_SPEED - MIN_SPEED) * speedProgress);
-
+        
         let multiplier = 1;
-
-        if (level >= ADVANCED_CHAOS_LEVEL) {
-            isSynced = Math.random() < 0.5;
-            isStatic = false;
-            multiplier = 1 + Math.random() * 2;
-        } 
-        else {
+        if (level >= ADVANCED_CHAOS_LEVEL) { isSynced = Math.random() < 0.5; isStatic = false; multiplier = 1 + Math.random() * 2; } 
+        else { 
             const chaosRoll = Math.random();
-            if (chaosRoll < 0.33) {
-                isStatic = true;
-                multiplier = 1 + Math.random(); 
-            } else if (chaosRoll < 0.66) {
-                isSynced = true;
-                isStatic = false;
-            } else {
-                isSynced = false;
-                isStatic = false;
-            }
+            if (chaosRoll < 0.33) { isStatic = true; multiplier = 1 + Math.random(); } 
+            else if (chaosRoll < 0.66) { isSynced = true; isStatic = false; } 
+            else { isSynced = false; isStatic = false; }
         }
-
         totalCharacters = Math.floor(totalCharacters * multiplier);
-
-        if (isSynced) {
-            sharedDirX = (Math.random() < 0.5 ? -1 : 1) * currentSpeed;
-            sharedDirY = (Math.random() < 0.5 ? -1 : 1) * currentSpeed;
-        }
+        if (isSynced) { sharedDirX = (Math.random() < 0.5 ? -1 : 1) * currentSpeed; sharedDirY = (Math.random() < 0.5 ? -1 : 1) * currentSpeed; }
         
         board.style.display = 'block'; 
         board.style.position = 'relative';
+        board.style.width = '100%';
+        board.style.height = '100%';
         board.style.gridTemplateColumns = 'none';
         board.style.gridTemplateRows = 'none';
-    } 
-    else {
+    } else {
         board.style.display = 'grid';
         let cols = Math.ceil(Math.sqrt(totalCharacters));
         let rows = Math.ceil(totalCharacters / cols);
-        
         totalCharacters = cols * rows;
-
         board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
         board.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
     }
@@ -768,14 +820,10 @@ function startLevel(animate = true) {
         shadowOverlay.style.setProperty('--radius', '200vmax');
     }
 
-    currentTarget = CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)];
-    targetImg.src = `assets/img/wanted${currentTarget}.png`;
-
     const targetIndex = Math.floor(Math.random() * totalCharacters);
-    const boardRect = board.getBoundingClientRect(); 
-
-    const bWidth = boardRect.width || window.innerWidth;
-    const bHeight = boardRect.height || window.innerHeight;
+    
+    const bWidth = board.clientWidth;
+    const bHeight = board.clientHeight;
 
     for (let i = 0; i < totalCharacters; i++) {
         const img = document.createElement('img');
@@ -795,28 +843,25 @@ function startLevel(animate = true) {
         }
 
         if (level >= CHAOS_MODE_LEVEL) {
-            img.style.position = 'absolute';
-            img.style.width = '60px';
-            img.style.height = '60px';
-            
-            const startX = Math.random() * (bWidth - 60);
-            const startY = Math.random() * (bHeight - 60);
-            
-            let dirX = 0;
-            let dirY = 0;
+            const wrapper = document.createElement('div');
+            wrapper.classList.add('char-wrapper');
+            if(img.dataset.type) wrapper.dataset.type = img.dataset.type;
+            if(img.classList.contains('target')) wrapper.classList.add('target');
 
+            const padding = 10;
+            const charSize = 60;
+            
+            const startX = Math.random() * (bWidth - charSize);
+            const startY = Math.random() * (bHeight - charSize);
+            
+            let dirX = 0; let dirY = 0;
             if (!isStatic) {
-                if (isSynced) {
-                    dirX = sharedDirX;
-                    dirY = sharedDirY;
-                } else {
-                    dirX = (Math.random() < 0.5 ? -1 : 1) * currentSpeed;
-                    dirY = (Math.random() < 0.5 ? -1 : 1) * currentSpeed;
-                }
+                if (isSynced) { dirX = sharedDirX; dirY = sharedDirY; } 
+                else { dirX = (Math.random() < 0.5 ? -1 : 1) * currentSpeed; dirY = (Math.random() < 0.5 ? -1 : 1) * currentSpeed; }
             }
 
             movingCharacters.push({
-                el: img,
+                el: wrapper,
                 x: startX,
                 y: startY,
                 dx: dirX,
@@ -826,58 +871,66 @@ function startLevel(animate = true) {
                 behavior: levelBehavior
             });
 
-            img.style.left = '0px';
-            img.style.top = '0px';
-            img.style.transform = `translate3d(${startX}px, ${startY}px, 0)`; 
+            wrapper.style.left = '0';
+            wrapper.style.top = '0';
+            wrapper.style.transform = `translate3d(${startX}px, ${startY}px, 0)`;
             
-            if (animate) {
-                img.style.opacity = '0';
-                requestAnimationFrame(() => {
-                    img.style.transition = 'opacity 0.2s ease-out';
-                    img.style.opacity = '1';
-                });
-            } else {
-                img.style.opacity = '1';
-            }
-
+            if (animate) img.style.animation = 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            
+            wrapper.appendChild(img);
+            wrapper.addEventListener('pointerdown', handleCharacterClick);
+            board.appendChild(wrapper);
         } else {
-            if (animate) {
-                img.style.animation = 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-            }
+            if (animate) img.style.animation = 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            img.addEventListener('pointerdown', handleCharacterClick);
+            board.appendChild(img);
         }
-
-        img.addEventListener('pointerdown', handleCharacterClick);
-        board.appendChild(img);
     }
 }
 
 function handleCharacterClick(e) {
-    if (!isPlaying || isPaused) return;
+    if (!isPlaying || isPaused || isTransitioning) return;
         
-    if (e.target.dataset.type === 'target') {
+    let targetEl = e.target;
+    if (!targetEl.dataset.type && targetEl.parentElement.dataset.type) {
+        targetEl = targetEl.parentElement;
+    }
+    
+    const imgEl = targetEl.tagName === 'IMG' ? targetEl : targetEl.querySelector('img');
+
+    if (targetEl.dataset.type === 'target') {
         const sound = audio.caught[Math.floor(Math.random() * audio.caught.length)];
         sound.volume = settings.sfxVolume;
         sound.play().catch(()=>{});
         
+        if(imgEl) imgEl.classList.add('flash-correct');
+        isTransitioning = true;
+
         score++;
         scoreEl.textContent = score;
         
-        timeLeft = Math.min(timeLeft + TIME_BONUS, 30);
-        
-        timerEl.textContent = timeLeft;
-        timerEl.classList.remove('timer-danger', 'timer-normal');
-        if(timeLeft <= 5) timerEl.classList.add('timer-danger');
-        else timerEl.classList.add('timer-normal');
+        if(!settings.practiceMode) {
+            timeLeft = Math.min(timeLeft + TIME_BONUS, 30);
+            timerEl.textContent = timeLeft;
+            timerEl.classList.remove('timer-danger', 'timer-normal');
+            if(timeLeft <= 5) timerEl.classList.add('timer-danger');
+            else timerEl.classList.add('timer-normal');
+        }
 
-        level++;
-        saveGame();
-        
-        startLevel(true); 
+        setTimeout(() => {
+            transitionToNextLevel();
+        }, 500);
+
     } else {
         audio.wrong.volume = settings.sfxVolume;
         audio.wrong.play().catch(()=>{});
 
-        if (!isDebug) {
+        if(imgEl) {
+            imgEl.classList.add('flash-wrong');
+            setTimeout(() => imgEl.classList.remove('flash-wrong'), 400);
+        }
+
+        if (!settings.practiceMode) {
             timeLeft = Math.max(0, timeLeft - 3);
             
             timerEl.textContent = timeLeft;
@@ -911,9 +964,7 @@ function gameOver() {
     overlayTitle.textContent = "GAME OVER";
     const best = localStorage.getItem('wanted_best_score') || 0;
     overlayDesc.innerHTML = `Score : ${score}`;
-    
-    if (best > 0) bestScoreDisplay.classList.remove('hidden');
-    
+        
     initStartScreen();
     
     document.querySelector('.top-buttons').style.display = 'flex';
@@ -1007,12 +1058,12 @@ preloadAssets();
 window.onload = () => {
     loadSettings();
 
-    const best = localStorage.getItem('wanted_best_score') || 0;
+    const best = parseInt(localStorage.getItem('wanted_best_score')) || 0;
+    
     if (best > 0) {
         bestScoreDisplay.textContent = `Record : ${best}`;
-        bestScoreDisplay.classList.remove('hidden');
     } else {
-        bestScoreDisplay.classList.add('hidden');
+        bestScoreDisplay.textContent = "Aucun record";
     }
 
     const hasSession = loadSession();
@@ -1022,7 +1073,6 @@ window.onload = () => {
 
     if (settings.menuMusic && settings.musicVolume > 0) {
         const targetVol = settings.musicVolume * 0.3;
-        
         audio.music.volume = 0; 
 
         const playPromise = audio.music.play();
@@ -1031,7 +1081,7 @@ window.onload = () => {
             playPromise.then(() => {
                 fadeAudioTo(targetVol, 2000);
             }).catch(error => {
-                console.log("Autoplay bloqué par le navigateur. Attente d'interaction...");
+                console.log("Autoplay bloqué. Attente d'interaction...");
                 const unlockAudio = () => {
                     audio.music.play().then(() => {
                         fadeAudioTo(targetVol, 2000);
@@ -1039,7 +1089,6 @@ window.onload = () => {
                     document.removeEventListener('click', unlockAudio);
                     document.removeEventListener('touchstart', unlockAudio);
                 };
-
                 document.addEventListener('click', unlockAudio, { once: true });
                 document.addEventListener('touchstart', unlockAudio, { once: true });
             });
@@ -1054,9 +1103,81 @@ startBtn.addEventListener('click', () => {
     startGame(hasSession);
 });
 
+function showConfirmModal(message, onConfirm) {
+    const confirmModal = document.getElementById('confirm-modal');
+    const confirmMsg = document.getElementById('confirm-msg');
+    const yesBtn = document.getElementById('confirm-yes');
+    const noBtn = document.getElementById('confirm-no');
+
+    confirmMsg.textContent = message;
+    
+    const handleYes = () => {
+        closeModal(confirmModal);
+        onConfirm();
+        cleanup();
+    };
+
+    const handleNo = () => {
+        closeModal(confirmModal);
+        cleanup();
+    };
+
+    const cleanup = () => {
+        yesBtn.removeEventListener('click', handleYes);
+        noBtn.removeEventListener('click', handleNo);
+    };
+
+    yesBtn.addEventListener('click', handleYes);
+    noBtn.addEventListener('click', handleNo);
+
+    openModal(confirmModal);
+}
+
+if(quitGameBtn) {
+    quitGameBtn.addEventListener('click', () => {
+        showConfirmModal("Voulez-vous vraiment abandonner la partie en cours ?", () => {
+            closeModal(settingsModal);
+            quitGame();
+        });
+    });
+}
+
 resetBtn.addEventListener('click', () => {
-    if(confirm("Voulez-vous vraiment recommencer à zéro ?")) {
+    showConfirmModal("Voulez-vous vraiment recommencer à zéro ?", () => {
         localStorage.removeItem('wanted_current_session');
         initStartScreen();
-    }
+    });
 });
+
+function transitionToNextLevel() {
+    const elements = document.querySelectorAll('.char-wrapper, .character:not(.char-wrapper .character)');
+    
+    const wantedPoster = document.getElementById('target-img');
+    if(wantedPoster) wantedPoster.classList.add('pop-out');
+
+    elements.forEach(el => {
+        const img = el.tagName === 'IMG' ? el : el.querySelector('img');
+        const isWinner = img && img.classList.contains('flash-correct');
+
+        if (!isWinner) {
+            if (el.classList.contains('char-wrapper')) {
+                const innerImg = el.querySelector('img');
+                if(innerImg) innerImg.classList.add('pop-out');
+            } else {
+                el.classList.add('pop-out');
+            }
+        }
+    });
+
+    setTimeout(() => {
+        const winner = document.querySelector('.flash-correct');
+        if(winner) winner.classList.add('pop-out');
+
+        setTimeout(() => {
+            level++;
+            saveGame();
+            startLevel(true);
+            isTransitioning = false;
+        }, 200);
+    }, 300);
+}
