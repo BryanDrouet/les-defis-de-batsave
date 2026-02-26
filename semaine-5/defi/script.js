@@ -153,9 +153,10 @@ function closeModal(modal) {
            modal.classList.add('hidden');
            
            const anyVisible = document.querySelectorAll('.modal.visible').length > 0;
+           const currentlyPlaying = isPlaying && overlayScreen.classList.contains('hidden');
            
            if (!anyVisible) {
-               if (isGameplayActive) {
+               if (currentlyPlaying) {
                    if (!settings.practiceMode) {
                        startResumeCountdown();
                    } else {
@@ -163,24 +164,39 @@ function closeModal(modal) {
                    }
                } else {
                    togglePause(false);
+                   countdownOverlay.classList.add('hidden');
                }
            }
         }
     }, 300);
 }
 
-function startResumeCountdown(onCompleteCallback = null) {
+function startResumeCountdown(onCompleteCallback = null, isStart = false) {
     if (settings.practiceMode) {
-        countdownOverlay.classList.add('hidden');
-        if (onCompleteCallback) {
-            onCompleteCallback();
+        if (isStart) {
+            countdownOverlay.style.transition = 'none';
+            countdownOverlay.textContent = '';
+            countdownOverlay.classList.remove('hidden');
+            
+            void countdownOverlay.offsetWidth;
+            
+            countdownOverlay.style.transition = '';
+            countdownOverlay.classList.add('hidden');
+            
+            setTimeout(() => {
+                if (onCompleteCallback) onCompleteCallback();
+                else togglePause(false);
+            }, 500);
         } else {
-            togglePause(false);
+            countdownOverlay.classList.add('hidden');
+            if (onCompleteCallback) onCompleteCallback();
+            else togglePause(false);
         }
         return;
     }
 
     let count = 3;
+    countdownOverlay.style.transition = '';
     countdownOverlay.classList.remove('hidden');
     countdownOverlay.textContent = count;
     
@@ -338,6 +354,8 @@ function quitGame() {
     cancelAnimationFrame(animationFrameId); 
     clearInterval(timerInterval);
     
+    countdownOverlay.classList.add('hidden'); 
+    
     document.body.classList.remove('game-running');
 
     localStorage.removeItem('wanted_current_session');
@@ -360,11 +378,11 @@ function quitGame() {
     const best = parseInt(localStorage.getItem('wanted_best_score')) || 0;
     if (best > 0) {
         bestScoreDisplay.textContent = `Record : ${best}`;
-        bestScoreDisplay.classList.remove('hidden');
     } else {
-        bestScoreDisplay.classList.add('hidden');
+        bestScoreDisplay.textContent = "Aucun record";
     }
 
+    bestScoreDisplay.classList.remove('hidden');
     overlayScreen.classList.remove('hidden');
     initStartScreen();
     
@@ -729,7 +747,7 @@ function startGame(isResume = false) {
             }
             saveGame();
         }, 1000);
-    });
+    }, true);
 }
 
 function startLevel(animate = true) {
