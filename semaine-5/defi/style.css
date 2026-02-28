@@ -23,6 +23,14 @@
         font-size: 1.5rem !important; 
     }
 
+    #timer.timer-debug {
+        font-size: 3.5rem !important;
+    }
+
+    #timer.timer-normal {
+        font-size: 1.5rem !important;
+    }
+
     .board {
         gap: 5px !important;
     }
