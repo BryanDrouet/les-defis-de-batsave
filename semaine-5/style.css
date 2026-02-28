@@ -84,7 +84,7 @@ a:hover {
     text-align: left;
 }
 
-.card, .theme-tease-in-outr {
+.card, .theme-teaser {
     align-items: flex-start;
     background: white;
     border-radius: 12px;
@@ -120,7 +120,7 @@ a:hover {
 }
 
 .game-concept p, .card h4, h1, h2, h3, h4, strong,
-.card p, .theme-tease-in-outr h3, .theme-tease-in-outr p,
+.card p, .theme-teaser h3, .theme-teaser p,
 .poster-container p, .progress-header,
 .progress-header strong, .progress-status {
     margin: 0;
@@ -225,7 +225,7 @@ h2 i, h3 i, h4 i, strong i {
     text-align: right;
 }
 
-.theme-tease-in-outr {
+.theme-teaser {
     background: #2c3e50 !important;
     color: white !important;
     filter: drop-shadow(3px 3px 0px #00000050) !important;
@@ -233,7 +233,7 @@ h2 i, h3 i, h4 i, strong i {
     gap: 10px !important;
 }
 
-.theme-tease-in-outr h3 {
+.theme-teaser h3 {
     color: #f1c40f;
 }
 
