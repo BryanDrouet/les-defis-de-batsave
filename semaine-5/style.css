@@ -226,11 +226,11 @@ h2 i, h3 i, h4 i, strong i {
 }
 
 .theme-tease-in-outr {
-    background: #2c3e50;
-    color: white;
+    background: #2c3e50 !important;
+    color: white !important;
     filter: drop-shadow(3px 3px 0px #00000050) !important;
-    flex: none;
-    gap: 10px;
+    flex: none !important;
+    gap: 10px !important;
 }
 
 .theme-tease-in-outr h3 {
