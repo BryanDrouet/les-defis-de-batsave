@@ -1,0 +1,253 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
+
+* {
+    box-sizing: border-box;
+    word-break: break-word;
+}
+
+@media (max-width: 480px) {
+    .mechanics {
+        grid-template-columns: 1fr !important;
+    }
+
+    .poster-container {
+        flex-direction: column !important;
+        gap: 30px !important;
+    }
+
+    .progress-header strong svg {
+        display: none !important;
+    }
+
+    .wanted-poster {
+        height: 160px !important;
+    }
+
+    .progress-footer {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+    }
+
+    .progress-footer * {
+        text-align: left !important;
+    }
+}
+
+@keyframes progress-stripes {
+    0% { background-position: 0 0; }
+    100% { background-position: 20px 0; }
+}
+
+@keyframes spin {
+    0% { transform: rotate(360deg); }
+    100% { transform: rotate(0deg); }
+}
+
+body {
+    background-color: #f4f4f9;
+    color: #333;
+    font-family: "Rubik", sans-serif;
+    line-height: 1.6;
+    margin: 20px;
+}
+
+a {
+    background-image: linear-gradient(#52baff, #52baff);
+    background-position: left bottom;
+    background-repeat: no-repeat;
+    background-size: 0% 2px;
+    color: #3498db;
+    font-weight: bold;
+    text-decoration: none;
+    transition: background-size 0.3s ease-in-out, color 0.2s ease-in-out;
+    word-break: break-word;
+}
+
+a:hover {
+    background-size: 100% 2px;
+    color: #52baff;
+}
+
+.card h4 {
+    align-items: center;
+    display: flex;
+    font-size: 1.1rem;
+}
+
+.card i {
+    color: #e67e22;
+}
+
+.card p {
+    color: #666;
+    font-size: 0.95rem;
+    text-align: left;
+}
+
+.card, .theme-teaser {
+    align-items: flex-start;
+    background: white;
+    border-radius: 12px;
+    display: flex;
+    filter: drop-shadow(3px 3px 0px #00000038);
+    flex-direction: column;
+    flex: 1 1 250px;
+    gap: 10px;
+    justify-content: flex-start;
+    max-width: 100%;
+    padding: 25px;
+}
+
+.defi-link {
+    font-size: 0.9rem;
+    font-style: italic;
+    text-align: left;
+}
+
+.explanation-container {
+    display: flex;
+    flex-direction: column;
+    gap: 50px;
+    margin: 0 auto;
+    max-width: 800px;
+    width: 100%;
+}
+
+.game-concept {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.game-concept p, .card h4, h1, h2, h3, h4, strong,
+.card p, .theme-teaser h3, .theme-teaser p,
+.poster-container p, .progress-header,
+.progress-header strong, .progress-status {
+    margin: 0;
+}
+
+h1, h2, h3, h4, strong {
+    align-items: center;
+    color: #2c3e50;
+    display: flex;
+    gap: 12px;
+    width: 100%;
+}
+
+h2 i, h3 i, h4 i, strong i {
+    align-items: center;
+    display: inline-flex;
+    flex-shrink: 0;
+    justify-content: center;
+}
+
+.mechanics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    width: 100%;
+}
+
+.poster-container {
+    align-items: center;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.progress-bar-container {
+    background-color: #ecf0f1;
+    border-radius: 10px;
+    height: 12px;
+    overflow: hidden;
+    width: 100%;
+}
+
+.progress-bar-fill {
+    animation: progress-stripes 1s linear infinite;
+    background-color: #3498db;
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+    background-size: 20px 20px;
+    border-radius: 10px;
+    height: 100%;
+    transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 0%;
+}
+
+.progress-footer {
+    align-items: center;
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+}
+
+.progress-header {
+    align-items: center;
+    color: #2c3e50;
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+}
+
+.progress-header strong {
+    align-items: center;
+    display: flex;
+    font-size: 1.1rem;
+    gap: 10px;
+}
+
+.progress-header svg {
+    animation: spin 2s linear infinite;
+    color: #3498db;
+}
+
+.progress-percentage {
+    color: #3498db;
+    font-weight: bold;
+    text-align: right;
+    width: stretch;
+}
+
+.progress-section {
+    background: white;
+    border-radius: 12px;
+    display: flex;
+    filter: drop-shadow(3px 3px 0px #00000038);
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+}
+
+.progress-status {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    font-style: italic;
+    text-align: right;
+}
+
+.theme-teaser {
+    background: #2c3e50 !important;
+    color: white !important;
+    filter: drop-shadow(3px 3px 0px #00000050) !important;
+    flex: none !important;
+    gap: 10px !important;
+}
+
+.theme-teaser h3 {
+    color: #f1c40f;
+}
+
+.wanted-poster {
+    aspect-ratio: 1/1;
+    border-radius: 6px;
+    filter: drop-shadow(3px 3px 0px #00000038);
+    height: 100px;
+    margin: 3px;
+    transform: rotate(-3deg);
+    transition: transform 0.3s ease-in-out, filter 0.3s ease-in-out;
+}
+
+.wanted-poster:hover {
+    filter: drop-shadow(3px 3px 0px #00000054);
+    transform: rotate(0deg) scale(1.05);
+}
