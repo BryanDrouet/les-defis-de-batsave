@@ -5,6 +5,13 @@ const weeks = [
         weekNumber: 5, 
         type: "jeu",
         display: "presentation"
+    },
+        { 
+        name: "Semaine 6 - Écho", 
+        path: "semaine-6", 
+        weekNumber: 6, 
+        type: "jeu",
+        display: "utilitaire"
     }
 ];
 
